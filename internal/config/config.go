@@ -20,7 +20,7 @@ func GetAddress() string {
 }
 
 func LoadConfig() {
-	cfg, err := os.ReadFile("../config.yaml")
+	cfg, err := os.ReadFile("../configs/config.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}

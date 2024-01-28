@@ -10,6 +10,7 @@ import (
 type Room struct {
 	Name     string
 	Password [32]byte
+	Master   string
 	Players  []player.Player
 }
 
@@ -17,6 +18,7 @@ func NewRoom(roomName, playerName, password string) *Room {
 	return &Room{
 		Name:     roomName,
 		Password: sha256.Sum256([]byte(password)),
+		Master:   playerName,
 		Players: []player.Player{
 			player.NewPlayer(playerName),
 		},

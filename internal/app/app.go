@@ -1,6 +1,7 @@
 package app
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/Corray333/progg/internal/app/handlers"
@@ -21,6 +22,7 @@ func (a *App) Run() {
 	r := chi.NewRouter()
 	r.Post("/rooms", handlers.CreateRoom(a.Rooms))
 	r.Post("/rooms/{room}", handlers.JoinToRoom(a.Rooms))
+	slog.Info("Server is running on " + config.GetAddress())
 	if err := http.ListenAndServe(config.GetAddress(), r); err != nil {
 		panic(err)
 	}
