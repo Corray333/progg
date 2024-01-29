@@ -3,11 +3,71 @@ package handlers
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"fmt"
+	"log/slog"
 	"net/http"
+	"regexp"
+	"strconv"
 
 	"github.com/Corray333/progg/internal/room"
 	"github.com/go-chi/chi/v5"
 )
+
+func GetRooms(rooms map[string]*room.Room) http.HandlerFunc {
+	type Resp struct {
+		Rooms  []string `json:"rooms"`
+		Amount int      `json:"amount"`
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		roomName := r.URL.Query().Get("name")
+		roomList := make([]string, 0, 50)
+		numQuery := r.URL.Query().Get("number")
+		number := 0
+		if numQuery != "" {
+			number, err := strconv.Atoi(numQuery)
+			if err != nil || number < 0 || number > len(rooms) {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+		}
+
+		i := 0
+		if roomName != "" {
+			re := regexp.MustCompile(".*" + roomName + ".*")
+			for room := range rooms {
+				if re.Find([]byte(room)) == nil {
+					continue
+				}
+				if i < number {
+					continue
+				}
+				if i == number+50 {
+					break
+				}
+
+				roomList = append(roomList, room)
+				i++
+			}
+		} else {
+			for room := range rooms {
+				if i < number {
+					i++
+					continue
+				}
+				if i == number+50 {
+					break
+				}
+				roomList = append(roomList, room)
+				i++
+			}
+		}
+		fmt.Println(roomList)
+		if err := json.NewEncoder(w).Encode(Resp{roomList, number + len(roomList)}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
 
 func CreateRoom(rooms map[string]*room.Room) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -22,6 +82,7 @@ func CreateRoom(rooms map[string]*room.Room) http.HandlerFunc {
 		}
 		room := room.NewRoom(req.RoomName, req.PlayerName, req.Password)
 		rooms[req.RoomName] = room
+		slog.Info(fmt.Sprintf("Room created: %v", room))
 		w.WriteHeader(http.StatusCreated)
 	}
 }

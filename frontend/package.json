@@ -10,6 +10,7 @@
   "dependencies": {
     "@tresjs/cientos": "^3.7.0",
     "@tresjs/core": "^3.6.1",
+    "axios": "^1.6.7",
     "postprocessing": "^7.0.0-alpha-1",
     "three": "^0.160.1",
     "vue": "^3.2.13",
