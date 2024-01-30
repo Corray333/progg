@@ -38,6 +38,7 @@ func (a *App) Run() {
 	r.Get("/rooms", handlers.GetRooms(a.Rooms))
 	r.Post("/rooms", handlers.CreateRoom(a.Rooms))
 	r.Post("/rooms/{room}", handlers.JoinToRoom(a.Rooms))
+	r.HandleFunc("/rooms/{room}/game", handlers.Play(a.Rooms))
 	slog.Info("Server is running on " + config.GetAddress())
 	if err := http.ListenAndServe(config.GetAddress(), r); err != nil {
 		panic(err)

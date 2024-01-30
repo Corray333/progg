@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/Corray333/progg/internal/room"
 	"github.com/go-chi/chi/v5"
+	"github.com/gorilla/websocket"
 )
 
 func GetRooms(rooms map[string]*room.Room) http.HandlerFunc {
@@ -61,7 +63,6 @@ func GetRooms(rooms map[string]*room.Room) http.HandlerFunc {
 				i++
 			}
 		}
-		fmt.Println(roomList)
 		if err := json.NewEncoder(w).Encode(Resp{roomList, number + len(roomList)}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -108,10 +109,41 @@ func JoinToRoom(rooms map[string]*room.Room) http.HandlerFunc {
 			return
 		}
 		if err := room.NewPlayer(req.PlayerName); err != nil {
+			slog.Error(err.Error())
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(err.Error()))
 			return
 		}
 		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func Play(rooms map[string]*room.Room) http.HandlerFunc {
+	var upgrader = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		c, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			slog.Error(err.Error())
+			return
+		}
+		defer c.Close()
+		slog.Info("Test")
+		_, msg, err := c.ReadMessage()
+		if err != nil {
+			slog.Error("read: " + err.Error())
+		}
+		slog.Info("msg: " + string(msg))
+		for {
+			err = c.WriteMessage(websocket.TextMessage, []byte("Hello, world!"))
+			if err != nil {
+				slog.Error("write:" + err.Error())
+				break
+			}
+			time.Sleep(time.Second * 3)
+		}
 	}
 }

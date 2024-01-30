@@ -11,6 +11,7 @@ type Room struct {
 	Name     string
 	Password [32]byte
 	Master   string
+	Started  bool
 	Players  []player.Player
 }
 
@@ -19,6 +20,7 @@ func NewRoom(roomName, playerName, password string) *Room {
 		Name:     roomName,
 		Password: sha256.Sum256([]byte(password)),
 		Master:   playerName,
+		Started:  false,
 		Players: []player.Player{
 			player.NewPlayer(playerName),
 		},
@@ -31,9 +33,13 @@ func (r *Room) NewPlayer(playerName string) error {
 	}
 	for _, p := range r.Players {
 		if p.Username == playerName {
-			return errors.New("player already exists")
+			return nil
 		}
 	}
 	r.Players = append(r.Players, player.NewPlayer(playerName))
 	return nil
+}
+
+func (r *Room) Start() {
+
 }

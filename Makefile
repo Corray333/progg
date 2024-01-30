@@ -5,4 +5,3 @@ front:
 	cd frontend && npm run serve
 run: build
 	cd cmd && ./main
-	make front

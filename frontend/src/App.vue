@@ -34,6 +34,7 @@ body{
   width: 100%;
   gap: 25px;
   padding: 25px;
+  min-height: 100vh;
 }
 *:focus{
   outline: none;

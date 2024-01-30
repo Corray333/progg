@@ -1,9 +1,12 @@
 package player
 
+import "github.com/gorilla/websocket"
+
 type Player struct {
 	Username  string
 	Money     int
 	Companies []string
+	Conn      *websocket.Conn
 }
 
 func NewPlayer(username string) Player {
