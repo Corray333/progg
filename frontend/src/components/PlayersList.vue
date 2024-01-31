@@ -12,8 +12,6 @@
 
 <style scoped>
 
-.players{
-    width: 250px;
-}
+
 
 </style>

@@ -33,7 +33,7 @@ body{
   display: flex;
   width: 100%;
   gap: 25px;
-  padding: 25px;
+  padding: 50px;
   min-height: 100vh;
 }
 *:focus{

@@ -29,7 +29,7 @@
         <div class="rooms-list">
             <div class="room" v-for="(room, id) in rooms" :key="id">
                 <p>{{room}}</p>
-                <button @click="joinRoom(room)"><img src="../assets/icons/play.png" alt=""></button>
+                <router-link :to="`/rooms/${room}`"><img src="../assets/icons/play.png" alt=""></router-link>
             </div>
         </div>  
     </div>

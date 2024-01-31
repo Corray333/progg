@@ -12,7 +12,7 @@
                     <input type="password" v-model="password" autocomplite="off">
                 </span>
                 <button @click="joinRoom()">Join room</button>
-                <button id="close-modal" @click="showModal = false"><img src="../assets/icons/plus.png" alt=""></button>
+                <button id="close-modal" @click="showModal = false; router.push('/rooms')"><img src="../assets/icons/plus.png" alt=""></button>
             </div>
         </div>
         <PlayMap @tile-pick="changeCard"/>
@@ -20,6 +20,8 @@
             <div class="row">
                 <InfoCard :pick="pick"/>
                 <PlayersList/>
+                <input type="text" v-model="testText">
+                <button @click="testSend()">Click</button>
             </div>
             <HandCards/>
         </div>
@@ -42,6 +44,14 @@ console.log(route)
 const showModal = ref(true)
 const username = ref('')
 const password = ref('')
+
+const testText = ref('')
+
+let socket
+
+const testSend = ()=>{
+    socket.send(testText.value)
+}
 
 
 // const room = ref()
@@ -335,6 +345,8 @@ const changeCard = (query)=>{
     pick.value = map.get(query)
 }
 
+const players = ref()
+
 const joinRoom = async ()=>{
     try { 
         let req = {
@@ -343,12 +355,12 @@ const joinRoom = async ()=>{
             password:password.value
         }
         await axios.post(`http://localhost:3000/rooms`, req) 
-        let socket = new WebSocket(`ws://localhost:3000/rooms/${route}/game`);
+        socket = new WebSocket(`ws://localhost:3000/rooms/${route}/game`);
 
         socket.onopen = function() {
             console.log("[open] Connection established");
             console.log("Sending to server");
-            socket.send(username.value);
+            socket.send(username.value+'|'+route);
             showModal.value = false
         };
 
@@ -381,8 +393,31 @@ const joinRoom = async ()=>{
 
 
 const handleFunc = (data) =>{
-    const req = JSON.parse(data)
-    console.log(req)
+    const type = data.substring(0,2)
+    const req = JSON.parse(data.substring(2))
+    console.log(type, req)
+    switch (type) {
+        case '00':
+            console.log('exit')
+            break;
+        case '01':
+            console.log('start the game')
+            break;
+        case '02':
+            console.log('turn started')
+            break;
+        case '03':
+            console.log('player moved')
+            break;
+        case '04':
+            console.log('player bought')
+            break;
+        case '05':
+            players.value = req
+            break
+        default:
+            break;
+    }
 }
 
 </script>
@@ -473,6 +508,16 @@ button{
 }
 .row{
     display: flex;
+    width: 100%;
+    justify-content: space-around;
+}
+.column{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
 }
 
 </style>

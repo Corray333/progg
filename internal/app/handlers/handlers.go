@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
-	"time"
+	"strings"
 
 	"github.com/Corray333/progg/internal/room"
 	"github.com/go-chi/chi/v5"
@@ -136,14 +136,21 @@ func Play(rooms map[string]*room.Room) http.HandlerFunc {
 		if err != nil {
 			slog.Error("read: " + err.Error())
 		}
-		slog.Info("msg: " + string(msg))
+		splitted := strings.Split(string(msg), "|")
+		name := splitted[0]
+		roomName := splitted[1]
+		for _, player := range rooms[roomName].Players {
+			if player.Username == name {
+				player.Conn = c
+			}
+		}
 		for {
-			err = c.WriteMessage(websocket.TextMessage, []byte("Hello, world!"))
+			_, msg, err = c.ReadMessage()
 			if err != nil {
-				slog.Error("write:" + err.Error())
+				slog.Error("reading error:" + err.Error())
 				break
 			}
-			time.Sleep(time.Second * 3)
+			rooms[roomName].Handle(string(msg))
 		}
 	}
 }
