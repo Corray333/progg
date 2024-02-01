@@ -70,7 +70,7 @@ const createRoom = async ()=>{
         await axios.post(`http://localhost:3000/rooms`, req) 
         router.push(`/rooms/${roomName.value}`)
     } catch (error) { 
-        alert("Ошибка", error)
+        alert("Ошибка"+ error)
     } 
 }
 

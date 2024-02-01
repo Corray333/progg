@@ -4,7 +4,7 @@
 </template>
 
 <script setup>
-import NavBar from '@/components/NavBar.vue'
+import NavBar from './components/NavBar.vue'
 </script>
 
 <style>
@@ -38,5 +38,17 @@ body{
 }
 *:focus{
   outline: none;
+}
+button{
+    padding: 10px;
+    border-radius: 15px;
+    border: 3px solid #fff;
+    background: transparent;
+    background-color: var(--black);
+    transition: ease-in-out 0.2s;
+}
+button:hover{
+    transform: scale(1.05);
+    transition: ease-in-out 0.2s;
 }
 </style>

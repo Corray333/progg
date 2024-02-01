@@ -82,6 +82,8 @@ func CreateRoom(rooms map[string]*room.Room) http.HandlerFunc {
 			return
 		}
 		room := room.NewRoom(req.RoomName, req.PlayerName, req.Password)
+		room.Players[0].Companies = []string{"yandex1"}
+		room.Players[0].Avatar = 0
 		rooms[req.RoomName] = room
 		slog.Info(fmt.Sprintf("Room created: %v", room))
 		w.WriteHeader(http.StatusCreated)
@@ -150,7 +152,8 @@ func Play(rooms map[string]*room.Room) http.HandlerFunc {
 				slog.Error("reading error:" + err.Error())
 				break
 			}
-			rooms[roomName].Handle(string(msg))
+			slog.Info("received: " + string(msg))
+			rooms[roomName].Handle(string(msg), name)
 		}
 	}
 }

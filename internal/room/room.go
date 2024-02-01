@@ -4,8 +4,15 @@ import (
 	"crypto/sha256"
 	"errors"
 	"log/slog"
+	"math/rand"
+	"os"
+	"slices"
 
 	"github.com/Corray333/progg/internal/player"
+)
+
+const (
+	TurnTime = 30
 )
 
 type Room struct {
@@ -32,18 +39,46 @@ func (r *Room) NewPlayer(playerName string) error {
 	if len(r.Players) >= 6 {
 		return errors.New("room is full")
 	}
+	avatars := []int{}
 	for _, p := range r.Players {
+		avatars = append(avatars, p.Avatar)
 		if p.Username == playerName {
 			return nil
 		}
 	}
-	r.Players = append(r.Players, player.NewPlayer(playerName))
+	player := player.NewPlayer(playerName)
+	dir, _ := os.ReadDir("../frontend/src/assets/avatars")
+	l := len(dir)
+	for {
+		num := rand.Int() % l
+		if !slices.Contains(avatars, num) {
+			player.Avatar = num
+			break
+		}
+	}
+	r.Players = append(r.Players, player)
 	return nil
 }
 
 func (r *Room) Start() {
 	// TODO: exception is not enough players
 	r.Started = true
+
+	rand.Shuffle(len(r.Players), func(i, j int) {
+		r.Players[i], r.Players[j] = r.Players[j], r.Players[i]
+	})
+
+	for _, p := range r.Players {
+		p.Conn.WriteMessage(1, []byte("05"))
+		p.Conn.WriteMessage(1, []byte("01"))
+	}
+	slog.Info("Game started in room " + r.Name)
+	for i := 0; i < len(r.Players); i++ {
+		// code of turn
+		if i == len(r.Players)-1 {
+			i = 0
+		}
+	}
 }
 
 // 00 - exit
@@ -53,7 +88,7 @@ func (r *Room) Start() {
 // 04 - player bought
 // 05 - get all info
 
-func (r *Room) Handle(query string) {
+func (r *Room) Handle(query string, username string) {
 	if len(query) < 2 {
 		return
 	}
@@ -61,9 +96,15 @@ func (r *Room) Handle(query string) {
 	case "00":
 		r.RemovePlayer(query[2:])
 	case "01":
-		r.Start()
+		f := true
 		for _, p := range r.Players {
-			r.SendAllInfo(p)
+			if p.Username == username {
+				p.Ready = true
+			}
+			f = f && p.Ready
+		}
+		if f {
+			r.Start()
 		}
 	case "02":
 	case "03":

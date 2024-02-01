@@ -1,154 +1,160 @@
 <template>
-    <div class="map">
+    <div class="map" ref="map">
         <img src="../assets/icons/arrow.png" alt="" id="arrow">
+        <div class="players">
+            <div class="player" v-for="(player, i) of props.players" :key="i" :id="player.username"> 
+                <img :src="`/src/assets/avatars/${player.avatar}.png`" alt="">
+                <div class="player-line"></div>
+            </div>
+        </div>
         <div class="row row1">
-            <div class="map-tile">
+            <div class="map-tile" id="i10">
                 <img src="../assets/icons/prison.png" alt="">
             </div>
-            <div class="map-tile" @click="$emit('tile-pick', 'megafon')">
+            <div class="map-tile" @click="$emit('tile-pick', 'megafon')" id="i11">
                 <img src="../assets/icons/megafon.png" alt="">
                 <span class="green-line"></span>
             </div>
-            <div class="map-tile">
+            <div class="map-tile" id="i12">
                 <p>?</p>
                 <p>Шанс</p>
             </div>
-            <div class="map-tile" @click="$emit('tile-pick', 'kaspersky')">
-                <img src="../assets/icons/kaspersky.png" alt="">
+            <div class="map-tile" @click="$emit('tile-pick', 'kaspersky')" id="i13">
+                <img src="../assets/icons/kaspersky.png" alt="" id="">
                 <span class="green-line"></span>
             </div>
-            <div class="map-tile" @click="$emit('tile-pick', 'sber')">
+            <div class="map-tile" @click="$emit('tile-pick', 'sber')" id="i14">
                 <img src="../assets/icons/sber.png" alt="">
                 <span class="green-line"></span>
             </div>
-            <div class="map-tile">
+            <div class="map-tile" id="i15">
                 <p>?</p>
                 <p>Шанс</p>
             </div>
-            <div class="map-tile" @click="$emit('tile-pick', 'astra')">
+            <div class="map-tile" @click="$emit('tile-pick', 'astra')" id="i16">
                 <img src="../assets/icons/astra.png" alt="">
                 <span class="white-line"></span>
             </div>
-            <div class="map-tile" @click="$emit('tile-pick', 'geekbrains')">
+            <div class="map-tile" @click="$emit('tile-pick', 'geekbrains')" id="i17">
                 <img src="../assets/icons/geekbrains.png" alt="">
             </div>
-            <div class="map-tile" @click="$emit('tile-pick', 'rostech')">
+            <div class="map-tile" @click="$emit('tile-pick', 'rostech')" id="i18">
                 <img src="../assets/icons/rostech.png" alt="">
                 <span class="white-line"></span>
             </div>
-            <div class="map-tile">
+            <div class="map-tile" id="i19">
                 <img src="../assets/icons/sleep.png" alt="">
             </div>
         </div>
         <div class="row row2">
             <div class="column column1">
-                <div class="map-tile" @click="$emit('tile-pick', 'tensor')">
+                <div class="map-tile" @click="$emit('tile-pick', 'tensor')" id="i9">
                     <img src="../assets/icons/tensor.png" alt="">
                     <span class="orange-line"></span>
                 </div>
-                <div class="map-tile" @click="$emit('tile-pick', 'finam')">
+                <div class="map-tile" @click="$emit('tile-pick', 'finam')" id="i8">
                     <img src="../assets/icons/finam.png" alt="">
                     <span class="orange-line"></span>
                 </div>
-                <div class="map-tile">
+                <div class="map-tile" id="i7">
                     <p>?</p>
                     <p>Шанс</p>
                 </div>
-                <div class="map-tile" @click="$emit('tile-pick', 'europlan')">
+                <div class="map-tile" @click="$emit('tile-pick', 'europlan')" id="i6">
                     <img src="../assets/icons/europlan.png" alt="">
                     <span class="orange-line"></span>
                 </div>
-                <div class="map-tile" @click="$emit('tile-pick', 'hh')">
+                <div class="map-tile" @click="$emit('tile-pick', 'hh')" id="i5">
                     <img src="../assets/icons/hh.png" alt="">
                 </div>
-                <div class="map-tile" @click="$emit('tile-pick', 'yota')">
+                <div class="map-tile" @click="$emit('tile-pick', 'yota')" id="i4">
                     <img src="../assets/icons/yota.png" alt="">
                     <span class="light-blue-line"></span>
                 </div>
-                <div class="map-tile">
+                <div class="map-tile" id="i3">
                     <p>?</p>
                     <p>Шанс</p>
                 </div>
-                <div class="map-tile" @click="$emit('tile-pick', 'skyeng')">
+                <div class="map-tile" @click="$emit('tile-pick', 'skyeng')" id="i2">
                     <img src="../assets/icons/skyeng.png" alt="">
                     <span class="light-blue-line"></span>
                 </div>
             </div>
-            <div class="chance-deck">
+            <div class="chance-deck" @click="placePlayers()">
                 <div class="chance-card"><p>Шанс</p></div>
                 <div class="chance-card"><p>Шанс</p></div>
             </div>
             <div class="column column2">
-                <div class="map-tile" @click="$emit('tile-pick', '1c')">
+                <div class="map-tile" @click="$emit('tile-pick', '1c')" id="i20">
                     <span class="yellow-line"></span>
                     <img src="../assets/icons/1c.png" alt="">
                 </div>
-                <div class="map-tile">
+                <div class="map-tile" id="i21">
                     <p>Шанс</p>
                     <p>?</p>
                 </div>
-                <div class="map-tile" @click="$emit('tile-pick', 'beeline')">
+                <div class="map-tile" @click="$emit('tile-pick', 'beeline')" id="i22">
                     <span class="yellow-line"></span>
                     <img src="../assets/icons/beeline.png" alt="">
                 </div>
-                <div class="map-tile" @click="$emit('tile-pick', 'tinkoff')">
+                <div class="map-tile" @click="$emit('tile-pick', 'tinkoff')" id="i23">
                     <span class="yellow-line"></span>
                     <img src="../assets/icons/tinkoff.png" alt="">
                 </div>
-                <div class="map-tile">
+                <div class="map-tile" id="i24">
                     <p>Шанс</p>
                     <p>?</p>
                 </div>
 
-                <div class="map-tile" @click="$emit('tile-pick', 'rostelekom')">
+                <div class="map-tile" @click="$emit('tile-pick', 'rostelekom')" id="i25">
                     <span class="purple-line"></span>
                     <img src="../assets/icons/rostelekom.png" alt="">
                 </div>
-                <div class="map-tile" @click="$emit('tile-pick', 'wot')">
+                <div class="map-tile" @click="$emit('tile-pick', 'wot')" id="i26">
                     <img src="../assets/icons/wot.png" alt="">
                 </div>
-                <div class="map-tile" @click="$emit('tile-pick', 'netbynet')">
+                <div class="map-tile" @click="$emit('tile-pick', 'netbynet')" id="i27">
                     <span class="purple-line"></span>
                     <img src="../assets/icons/netbynet.png" alt="">
                 </div>
             </div>
         </div>
         <div class="row row3">
-            <div class="map-tile" @click="$emit('tile-pick', 'reward')">
+            <div class="map-tile" @click="$emit('tile-pick', 'reward')" id="i1">
                 <img src="../assets/icons/reward.png" alt="">
             </div>
-            <div class="map-tile" @click="$emit('tile-pick', 'vk')">
+            <div class="map-tile" @click="$emit('tile-pick', 'vk')" id="i36">
                 <span class="blue-line"></span>
                 <img src="../assets/icons/vk.png" alt="">
             </div>
-            <div class="map-tile" @click="$emit('tile-pick', 'intellij')">
+            <div class="map-tile" @click="$emit('tile-pick', 'intellij')" id="i35">
                 <img src="../assets/icons/intellij.png" alt="">                
             </div>
-            <div class="map-tile" @click="$emit('tile-pick', 'ozon')">
+            <div class="map-tile" @click="$emit('tile-pick', 'ozon')"  id="i34">
                 <span class="blue-line"></span>
                 <img src="../assets/icons/ozon.png" alt="">
             </div>
-            <div class="map-tile">
+            <div class="map-tile" id="i33">
                 <p>Шанс</p>
                 <p>?</p>
             </div>
-            <div class="map-tile" @click="$emit('tile-pick', 'alpha')">
+            <div class="map-tile" @click="$emit('tile-pick', 'alpha')" id="i32">
                 <span class="red-line"></span>
                 <img src="../assets/icons/alpha.png" alt="">
             </div>
-            <div class="map-tile">
+            <div class="map-tile" id="i31">
                 <p>Шанс</p>
                 <p>?</p>
             </div>
-            <div class="map-tile"  @click="$emit('tile-pick', 'yandex')">
+            <div class="map-tile"  @click="$emit('tile-pick', 'yandex')" id="i30">
                 <span class="red-line"></span>
                 <img src="../assets/icons/yandex.png" alt="">
             </div>
-            <div class="map-tile" @click="$emit('tile-pick', 'magnit')">
+            <div class="map-tile" @click="$emit('tile-pick', 'magnit')" id="i29">
                 <span class="red-line"></span>
                 <img src="../assets/icons/magnit.png" alt="">
             </div>
-            <div class="map-tile" @click="$emit('tile-pick', 'arest')">
+            <div class="map-tile" @click="$emit('tile-pick', 'arest')" id="i28">
                 <img src="../assets/icons/arest.png" alt="">
             </div>
         </div>
@@ -156,6 +162,72 @@
 </template>
 
 <script setup>
+import { defineProps, ref, watch } from 'vue'
+const props = defineProps(['players'])
+
+const map = ref(null)
+
+watch(props.players, ()=>{
+    placePlayers()
+})
+
+
+
+
+
+const placePlayers = ()=>{
+    for (let player of props.players){
+        let p = map.value.querySelector(`#${player.username}`)
+        let tile = map.value.querySelector(`#i${player.position}`)
+        switch (true){
+            case player.position == 1:
+                p.style.top = `${tile.offsetTop-75}px`
+                p.style.left = `${tile.offsetWidth}px`
+                p.style.transform = `rotate(45deg)`
+                break
+            case player.position >= 2 && player.position <= 9:
+                p.style.top = `${tile.offsetTop}px`
+                p.style.left = `${tile.offsetWidth}px`
+                p.style.transform = `rotate(90deg)`
+                break
+            case player.position == 10:
+                p.style.top = `${tile.offsetHeight}px`
+                p.style.left = `${tile.offsetWidth}px`
+                p.style.transform = `rotate(135deg)`
+                break
+            case player.position >= 11  && player.position <= 18:
+                p.style.top = `${tile.offsetHeight}px`
+                p.style.left = `${tile.offsetLeft}px`
+                p.style.transform = `rotate(180deg)`
+                break
+            case player.position == 19:
+                p.style.top = `${tile.offsetHeight}px`
+                p.style.left = `${tile.offsetLeft-75}px`
+                p.style.transform = `rotate(225deg)`
+                break
+            case player.position >= 20  && player.position <= 27:
+                p.style.top = `${tile.offsetTop}px`
+                p.style.left = `${tile.offsetLeft-75}px`
+                p.style.transform = `rotate(270deg)`
+                break
+            case player.position == 28:
+                p.style.top = `${tile.offsetTop-75}px`
+                p.style.left = `${tile.offsetLeft-75}px`
+                p.style.transform = `rotate(315deg)`
+                break
+            case player.position >= 29  && player.position <= 36:
+                p.style.top = `${tile.offsetTop-75}px`
+                p.style.left = `${tile.offsetLeft}px`
+                p.style.transform = `rotate(360deg)`
+                break
+            default:
+                break
+        }
+
+    }
+}
+
+
 
 
 </script>
@@ -332,5 +404,32 @@
     transition: ease-in-out 0.2s;
     cursor: pointer;
 }
+
+.player{
+    width: 75px;
+    height: 75px;
+    position: absolute;
+    transition: ease-in-out 1s;
+    padding: 10px;
+}
+.player>img{
+    width: 100%;
+    height: 100%;
+    border-radius: 99px;
+    border: 3px solid white;
+    z-index: 10;
+    position: relative;
+}
+.player-line{
+    top: 50%;
+    left: 50%;
+    height: 50%;
+    position: absolute;
+    z-index: 1;
+    width: 3px;
+    background-color: white;
+    border-radius: 3px;
+}
+
 
 </style>

@@ -5,6 +5,8 @@ import "github.com/gorilla/websocket"
 type Player struct {
 	Username  string          `json:"username"`
 	Money     int             `json:"money"`
+	Avatar    int             `json:"avatar"`
+	Ready     bool            `json:"-`
 	Companies []string        `json:"companies"` // companyName + num of programs
 	Position  int             `json:"position"`
 	Hand      []int           `json:"hand"`
@@ -15,9 +17,11 @@ func NewPlayer(username string) *Player {
 	return &Player{
 		Username:  username,
 		Money:     1500,
+		Avatar:    0,
 		Companies: []string{},
-		Position:  0,
+		Position:  1,
 		Hand:      []int{},
+		Ready:     false,
 	}
 }
 

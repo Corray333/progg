@@ -15,13 +15,13 @@
                 <button id="close-modal" @click="showModal = false; router.push('/rooms')"><img src="../assets/icons/plus.png" alt=""></button>
             </div>
         </div>
-        <PlayMap @tile-pick="changeCard"/>
+        <PlayMap @tile-pick="changeCard" :players="players"/>
         <div class="column">
             <div class="row">
-                <InfoCard :pick="pick"/>
-                <PlayersList/>
-                <input type="text" v-model="testText">
-                <button @click="testSend()">Click</button>
+                <InfoCard :pick="pick" :players="players"/>
+                <PlayersList :players="players"  @ready="ready"/>
+                <!-- <input type="text" v-model="testText">
+                <button @click="socket.send(testText)">Click</button> -->
             </div>
             <HandCards/>
         </div>
@@ -32,30 +32,27 @@
 import { useRoute, useRouter } from 'vue-router'
 import {ref} from 'vue'
 import axios from 'axios'
-import PlayMap from '@/components/PlayMap.vue'
-import InfoCard from '@/components/InfoCard.vue'
-import PlayersList from '@/components/PlayersList.vue'
-import HandCards from '@/components/HandCards.vue'
+
+
+import PlayMap from '../components/PlayMap.vue'
+import InfoCard from '../components/InfoCard.vue'
+import PlayersList from '../components/PlayersList.vue'
+import HandCards from '../components/HandCards.vue'
 
 const route = useRoute().params.room
 const router = useRouter()
-console.log(route)
 
 const showModal = ref(true)
 const username = ref('')
 const password = ref('')
-
-const testText = ref('')
-
 let socket
 
-const testSend = ()=>{
-    socket.send(testText.value)
+const ready = ()=>{
+    socket.send('01')
 }
 
 
-// const room = ref()
-
+// Map with info about map
 const map = new Map()
 {
 map.set('vk', {
@@ -69,7 +66,8 @@ map.set('vk', {
         progPrice: 200,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/vk.png'
+        img: 'icons/vk.png',
+        number: 36
     }
 )
 map.set('ozon', {
@@ -83,7 +81,8 @@ map.set('ozon', {
         progPrice: 200,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/ozon.png'
+        img: 'icons/ozon.png',
+        number: 34
     }
 )
 map.set('yandex', {
@@ -97,7 +96,8 @@ map.set('yandex', {
         progPrice: 200,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/yandex.png'
+        img: 'icons/yandex.png',
+        number: 30
     }
 )
 map.set('alpha', {
@@ -111,7 +111,8 @@ map.set('alpha', {
         progPrice: 200,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/yandex.png'
+        img: 'icons/yandex.png',
+        number: 32
     }
 )
 map.set('magnit', {
@@ -125,7 +126,8 @@ map.set('magnit', {
         progPrice: 150,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/magnit.png'
+        img: 'icons/magnit.png',
+        number: 29
     }
 )
 map.set('rostelekom', {
@@ -139,7 +141,8 @@ map.set('rostelekom', {
         progPrice: 150,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/rostelekom.png'
+        img: 'icons/rostelekom.png',
+        number: 25
     }
 )
 map.set('netbynet', {
@@ -153,7 +156,8 @@ map.set('netbynet', {
         progPrice: 150,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/netbynet.png'
+        img: 'icons/netbynet.png',
+        number: 27
     }
 )
 map.set('tinkoff', {
@@ -167,7 +171,8 @@ map.set('tinkoff', {
         progPrice: 150,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/tinkoff.png'
+        img: 'icons/tinkoff.png',
+        number: 23
     }
 )
 map.set('beeline', {
@@ -181,7 +186,8 @@ map.set('beeline', {
         progPrice: 150,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/beeline.png'
+        img: 'icons/beeline.png',
+        number: 22
     }
 )
 map.set('1c', {
@@ -195,7 +201,8 @@ map.set('1c', {
         progPrice: 150,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/1c.png'
+        img: 'icons/1c.png',
+        number: 20
     }
 )
 map.set('rostech', {
@@ -209,7 +216,8 @@ map.set('rostech', {
         progPrice: 100,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/rostech.png'
+        img: 'icons/rostech.png',
+        number: 18
     }
 )
 map.set('astra', {
@@ -223,7 +231,8 @@ map.set('astra', {
         progPrice: 100,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/astra.png'
+        img: 'icons/astra.png',
+        number: 16
     }
 )
 map.set('sber', {
@@ -237,7 +246,8 @@ map.set('sber', {
         progPrice: 100,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/sber.png'
+        img: 'icons/sber.png',
+        number: 14
     }
 )
 map.set('kaspersky', {
@@ -251,7 +261,8 @@ map.set('kaspersky', {
         progPrice: 100,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/kaspersky.png'
+        img: 'icons/kaspersky.png',
+        number: 13
     }
 )
 map.set('megafon', {
@@ -265,7 +276,8 @@ map.set('megafon', {
         progPrice: 100,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/megafon.png'
+        img: 'icons/megafon.png',
+        number: 11
     }
 )
 map.set('finam', {
@@ -279,7 +291,8 @@ map.set('finam', {
         progPrice: 50,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/finam.png'
+        img: 'icons/finam.png',
+        number: 8
     }
 )
 map.set('tensor', {
@@ -293,7 +306,8 @@ map.set('tensor', {
         progPrice: 50,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/tensor.png'
+        img: 'icons/tensor.png',
+        number: 9
     }
 )
 map.set('europlan', {
@@ -307,7 +321,8 @@ map.set('europlan', {
         progPrice: 50,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/europlan.png'
+        img: 'icons/europlan.png',
+        number: 6
     }
 )
 map.set('yota', {
@@ -321,7 +336,8 @@ map.set('yota', {
         progPrice: 50,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/yota.png'
+        img: 'icons/yota.png',
+        number: 4
     }
 )
 map.set('skyeng', {
@@ -335,7 +351,8 @@ map.set('skyeng', {
         progPrice: 50,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/skyeng.png'
+        img: 'icons/skyeng.png',
+        number: 2
     }
 )
 }
@@ -350,17 +367,17 @@ const players = ref()
 const joinRoom = async ()=>{
     try { 
         let req = {
-            room_name:route,
             player_name:username.value,
             password:password.value
         }
-        await axios.post(`http://localhost:3000/rooms`, req) 
+        await axios.post(`http://localhost:3000/rooms/${route}`, req) 
         socket = new WebSocket(`ws://localhost:3000/rooms/${route}/game`);
 
         socket.onopen = function() {
             console.log("[open] Connection established");
             console.log("Sending to server");
             socket.send(username.value+'|'+route);
+            socket.send('05'+username.value)
             showModal.value = false
         };
 
@@ -380,13 +397,13 @@ const joinRoom = async ()=>{
             console.log(error);
         };
     } catch (error) { 
-        alert("Ошибка", error)
+        console.log("Ошибка", error)
         router.push(`/home`)
     } 
 }
 
 // 00 - exit
-// 01 - start the game
+// 01 - ready | game started
 // 02 - turn started
 // 03 - player moved
 // 04 - player bought
@@ -394,8 +411,6 @@ const joinRoom = async ()=>{
 
 const handleFunc = (data) =>{
     const type = data.substring(0,2)
-    const req = JSON.parse(data.substring(2))
-    console.log(type, req)
     switch (type) {
         case '00':
             console.log('exit')
@@ -413,10 +428,21 @@ const handleFunc = (data) =>{
             console.log('player bought')
             break;
         case '05':
-            players.value = req
+            const req = JSON.parse(data.substring(2))
+            loadRoom(req)
             break
         default:
             break;
+    }
+}
+
+const loadRoom = (req)=>{
+    players.value = req
+    for (let player of players.value){
+        for (let company of player.companies){
+            map.get(company.substring(0,company.length-1)).owner = player.name
+            map.get(company.substring(0,company.length-1)).progsCount = Number(company[company.length-1])
+        }
     }
 }
 
@@ -454,7 +480,7 @@ const handleFunc = (data) =>{
 .join-room-modal>span>p{
     font-size: 14px;
 }
-.join-room-modalspan>input{
+.join-room-modal>span>input{
     margin-top: 5px;
     width: 250px;
     background: transparent;

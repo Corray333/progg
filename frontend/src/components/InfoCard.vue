@@ -1,20 +1,29 @@
 <template>
     <div class="card" ref="card" v-if="props.pick!=undefined" @click="console.log('test')">
         <span class="card-header">
-            <img :src="require(`../assets/${props.pick.img}`)" alt="">
+            <img :src="`/src/assets/${props.pick.img}`" alt="">
             <h3>{{ props.pick.name }}</h3>
         </span>
-        <div v-if="props.pick.color != undefined" :class="props.pick.color"></div>
+        <div class="line" v-if="props.pick.color != undefined" :class="props.pick.color"></div>
         <p>Владелец: {{ props.pick.owner }}</p>
         <p>Цена: {{ props.pick.price }}</p>
         <p>Рента: {{ props.pick.rentLevels[props.pick.progsCount] }}</p>
+        <div class="row">
+            <img src="/src/assets/icons/prog.png" alt="" v-for="i in props.pick.progsCount" :key="i">
+        </div>
+        <h3>Игроки на поле</h3>
+        <div class="players">
+            <div v-for="(player,i) of props.players"  :key="i" >
+                <img  class="player" v-if="player.position == pick.number" :src="`/src/assets/avatars/${player.avatar}.png`" alt="">
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup>
 import { defineProps, ref } from 'vue'
 import {useEventListener} from '@vueuse/core'
-const props = defineProps(['pick'])
+const props = defineProps(['pick', 'players'])
 
 const card = ref(null)
 
@@ -65,12 +74,35 @@ useEventListener(card, 'mouseleave', ()=>{
 .card-header>img{
     height: 32px;
 }
-.card>div {
+.line {
     width: 40px;
     height: 5px;
     border-radius: 99px;
     margin: 0 20px;
 }
+.row{
+    display: flex;
+    gap: 5px;
+}
+.row>img{
+    height: 24px;
+    padding: 10px;
+    border: 3px solid white;
+    border-radius: 99px;    
+    box-sizing: content-box;
+}
+
+.players{
+    display: flex;
+    gap: 5px;
+}
+.player{
+    width: 50px;
+    border:3px solid white;
+    border-radius: 99px;
+}
+
+
 .blue{
     background-color: var(--blue);
 }
