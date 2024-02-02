@@ -2,11 +2,14 @@ package room
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"math/rand"
 	"os"
 	"slices"
+	"time"
 
 	"github.com/Corray333/progg/internal/player"
 )
@@ -16,19 +19,19 @@ const (
 )
 
 type Room struct {
-	Name     string           `json:"name`
-	Password [32]byte         `json:"-"`
-	Master   string           `json:"master"`
-	Started  bool             `json:"started"`
-	Players  []*player.Player `json:"players"`
+	Name         string           `json:"name`
+	Password     [32]byte         `json:"-"`
+	ActivePlayer string           `json:"active_player"`
+	Started      bool             `json:"started"`
+	Players      []*player.Player `json:"players"`
 }
 
 func NewRoom(roomName, playerName, password string) *Room {
 	return &Room{
-		Name:     roomName,
-		Password: sha256.Sum256([]byte(password)),
-		Master:   playerName,
-		Started:  false,
+		Name:         roomName,
+		Password:     sha256.Sum256([]byte(password)),
+		ActivePlayer: playerName,
+		Started:      false,
 		Players: []*player.Player{
 			player.NewPlayer(playerName),
 		},
@@ -56,6 +59,9 @@ func (r *Room) NewPlayer(playerName string) error {
 			break
 		}
 	}
+	if r.Started {
+		return errors.New("game already started")
+	}
 	r.Players = append(r.Players, player)
 	return nil
 }
@@ -69,14 +75,39 @@ func (r *Room) Start() {
 	})
 
 	for _, p := range r.Players {
-		p.Conn.WriteMessage(1, []byte("05"))
+		fmt.Printf("%v\n", p)
+		r.SendAllInfo(p)
 		p.Conn.WriteMessage(1, []byte("01"))
 	}
 	slog.Info("Game started in room " + r.Name)
 	for i := 0; i < len(r.Players); i++ {
 		// code of turn
+		type Turn struct {
+			Username  string    `json:"username"`
+			EndOfTurn time.Time `json:"end_of_turn"`
+		}
+		req := Turn{
+			Username:  r.Players[i].Username,
+			EndOfTurn: time.Now().Add(TurnTime * time.Second),
+		}
+		res, err := json.Marshal(req)
+		if err != nil {
+			slog.Error(err.Error())
+			continue
+		}
+		go func() {
+			res = append([]byte("02"), res...)
+			for _, p := range r.Players {
+				err := p.Conn.WriteMessage(1, res)
+				if err != nil {
+					slog.Error("writing message: " + err.Error())
+				}
+			}
+		}()
+		time.Sleep(TurnTime * time.Second)
+
 		if i == len(r.Players)-1 {
-			i = 0
+			i = -1
 		}
 	}
 }
@@ -108,6 +139,26 @@ func (r *Room) Handle(query string, username string) {
 		}
 	case "02":
 	case "03":
+		for _, p := range r.Players {
+			if p.Username == username && p.Username == r.ActivePlayer {
+				steps := rand.Int()%6 + 1
+				p.Position = (p.Position+steps)%36 + 1
+				for _, p1 := range r.Players {
+					type Resp struct {
+						Username string `json:"username"`
+						Position int    `json:"position"`
+						Steps    int    `json:"steps"`
+					}
+					resp, err := json.Marshal(Resp{r.ActivePlayer, p.Position, steps})
+					if err != nil {
+						slog.Error(err.Error())
+						return
+					}
+					p1.Conn.WriteMessage(1, append([]byte("03"), resp...))
+				}
+				return
+			}
+		}
 	case "04":
 	case "05":
 		player := string(query[2:])

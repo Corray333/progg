@@ -6,7 +6,7 @@ type Player struct {
 	Username  string          `json:"username"`
 	Money     int             `json:"money"`
 	Avatar    int             `json:"avatar"`
-	Ready     bool            `json:"-`
+	Ready     bool            `json:"ready"`
 	Companies []string        `json:"companies"` // companyName + num of programs
 	Position  int             `json:"position"`
 	Hand      []int           `json:"hand"`

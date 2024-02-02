@@ -93,17 +93,17 @@ func CreateRoom(rooms map[string]*room.Room) http.HandlerFunc {
 func JoinToRoom(rooms map[string]*room.Room) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		roomName := chi.URLParam(r, "room")
+		room, ok := rooms[roomName]
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		var req struct {
 			PlayerName string `json:"player_name"`
 			Password   string `json:"password"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		room, ok := rooms[roomName]
-		if !ok {
-			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		if room.Password != sha256.Sum256([]byte(req.Password)) {
@@ -143,6 +143,9 @@ func Play(rooms map[string]*room.Room) http.HandlerFunc {
 		roomName := splitted[1]
 		for _, player := range rooms[roomName].Players {
 			if player.Username == name {
+				if player.Conn != nil {
+					player.Conn.Close()
+				}
 				player.Conn = c
 			}
 		}

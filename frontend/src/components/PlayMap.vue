@@ -1,7 +1,8 @@
 <template>
     <div class="map" ref="map">
-        <img src="../assets/icons/arrow.png" alt="" id="arrow">
-        <div class="players">
+        <img src="../assets/icons/arrow.png" alt="" id="arrow" @click="$emit('move')" v-if="props.playerProfile != undefined && props.playerProfile.status == 'active'">
+        <img src="../assets/icons/arrow.png" alt="" id="arrow" v-if="props.playerProfile != undefined && props.playerProfile.status == 'waiting'">
+        <div class="players" style="display:none;" ref="playersBlock">
             <div class="player" v-for="(player, i) of props.players" :key="i" :id="player.username"> 
                 <img :src="`/src/assets/avatars/${player.avatar}.png`" alt="">
                 <div class="player-line"></div>
@@ -162,20 +163,17 @@
 </template>
 
 <script setup>
-import { defineProps, ref, watch } from 'vue'
-const props = defineProps(['players'])
+import { defineProps, ref, defineExpose } from 'vue'
+const props = defineProps(['players', 'endOfTurn', 'playerProfile'])
+
 
 const map = ref(null)
-
-watch(props.players, ()=>{
-    placePlayers()
-})
-
-
-
+const playersBlock = ref(null)
 
 
 const placePlayers = ()=>{
+    if (props.players == undefined) return
+    playersBlock.value.style.display = 'block'
     for (let player of props.players){
         let p = map.value.querySelector(`#${player.username}`)
         let tile = map.value.querySelector(`#i${player.position}`)
@@ -226,6 +224,10 @@ const placePlayers = ()=>{
 
     }
 }
+
+defineExpose({
+  placePlayers
+})
 
 
 

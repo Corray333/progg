@@ -15,13 +15,11 @@
                 <button id="close-modal" @click="showModal = false; router.push('/rooms')"><img src="../assets/icons/plus.png" alt=""></button>
             </div>
         </div>
-        <PlayMap @tile-pick="changeCard" :players="players"/>
+        <PlayMap @tile-pick="changeCard" @move="move" :players="players" :endOfTurn="endOfTurn" :playerProfile="playerProfile" ref="mapComponent"/>
         <div class="column">
             <div class="row">
                 <InfoCard :pick="pick" :players="players"/>
-                <PlayersList :players="players"  @ready="ready"/>
-                <!-- <input type="text" v-model="testText">
-                <button @click="socket.send(testText)">Click</button> -->
+                <PlayersList :players="players" :playerProfile="playerProfile"  @ready="ready" :turnTimer="turnTimer"/>
             </div>
             <HandCards/>
         </div>
@@ -30,7 +28,7 @@
 
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import {ref} from 'vue'
+import {ref, watch} from 'vue'
 import axios from 'axios'
 
 
@@ -47,8 +45,38 @@ const username = ref('')
 const password = ref('')
 let socket
 
+const endOfTurn = ref()
+const turnTimer = ref()
+let timerInterval
+
+let playerProfile = ref()
+let activePlayer = ref()
+
+watch(endOfTurn, ()=>{
+    timer()
+})
+
+const timer = ()=>{
+    turnTimer.value = Math.floor((endOfTurn.value-Date.now())/1000)
+    clearInterval(timerInterval)
+    timerInterval = setInterval(()=>{
+        if (turnTimer.value <= 0) {
+            for (let player of players.value){
+                if (player.status == 'active'){
+                    player.status = 'waiting'
+                    break
+                }
+            }
+            clearInterval(timerInterval)
+            return
+        }
+        turnTimer.value--
+    }, 1000)
+}
+
 const ready = ()=>{
     socket.send('01')
+    playerProfile.ready = true
 }
 
 
@@ -363,6 +391,11 @@ const changeCard = (query)=>{
 }
 
 const players = ref()
+const mapComponent = ref(null)
+
+watch(players, ()=>{
+    mapComponent.value.placePlayers()
+}, {deep: true})
 
 const joinRoom = async ()=>{
     try { 
@@ -386,12 +419,15 @@ const joinRoom = async ()=>{
         };
 
         socket.onclose = function(event) {
+
             if (event.wasClean) {
                 console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
             } else {
                 console.log('[close] Connection died');
             }
-        };
+            alert('Другой пользователь вошел под тем же именем')
+            router.push(`/home`)
+        }
 
         socket.onerror = function(error) {
             console.log(error);
@@ -402,15 +438,23 @@ const joinRoom = async ()=>{
     } 
 }
 
+router.beforeEach(()=>{
+    if (socket != undefined){
+        socket.close()
+    }
+})
+
 // 00 - exit
 // 01 - ready | game started
 // 02 - turn started
-// 03 - player moved
+// 03 - player move
 // 04 - player bought
 
 
 const handleFunc = (data) =>{
+    console.log(data)
     const type = data.substring(0,2)
+    let req
     switch (type) {
         case '00':
             console.log('exit')
@@ -419,16 +463,18 @@ const handleFunc = (data) =>{
             console.log('start the game')
             break;
         case '02':
-            console.log('turn started')
+            req = JSON.parse(data.substring(2))
+            startTheTurn(req)
             break;
         case '03':
-            console.log('player moved')
+            req = JSON.parse(data.substring(2))
+            movePlayer(req)
             break;
         case '04':
             console.log('player bought')
             break;
         case '05':
-            const req = JSON.parse(data.substring(2))
+            req = JSON.parse(data.substring(2))
             loadRoom(req)
             break
         default:
@@ -439,11 +485,34 @@ const handleFunc = (data) =>{
 const loadRoom = (req)=>{
     players.value = req
     for (let player of players.value){
+        if (player.username == username.value){
+            playerProfile = player
+        }
+        player.status = 'waiting'
         for (let company of player.companies){
             map.get(company.substring(0,company.length-1)).owner = player.name
             map.get(company.substring(0,company.length-1)).progsCount = Number(company[company.length-1])
         }
     }
+}
+
+const startTheTurn = (req)=>{
+    let ps = JSON.parse(JSON.stringify(players.value))
+    for (let i = 0; i<ps.length; i++){
+        if (ps[i].username== req.username){
+            players.value[i].status = 'active'
+            activePlayer.value = players.value[i]
+            break
+        }
+    }
+    endOfTurn.value = Date.parse(req.end_of_turn)
+}
+
+const move = ()=>{
+    socket.send('03')
+}
+const movePlayer = (req)=>{
+    activePlayer.value.position = req.position
 }
 
 </script>
@@ -500,7 +569,6 @@ button{
     border-radius: 15px;
     border: 3px solid #fff;
     background: transparent;
-    height: 100%;
     background-color: var(--black);
     transition: ease-in-out 0.2s;
 }
