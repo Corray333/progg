@@ -1,6 +1,6 @@
 <template>
     <div class="map" ref="map">
-        <img src="../assets/icons/arrow.png" alt="" id="arrow" @click="$emit('move')" v-if="props.playerProfile != undefined && props.playerProfile.status == 'active'">
+        <img src="../assets/icons/arrow.png" class="clickable" alt="" id="arrow" @click="$emit('move')" v-if="props.playerProfile != undefined && props.playerProfile.status == 'active' & props.playerProfile.already_walked==false">
         <img src="../assets/icons/arrow.png" alt="" id="arrow" v-if="props.playerProfile != undefined && props.playerProfile.status == 'waiting'">
         <div class="players" style="display:none;" ref="playersBlock">
             <div class="player" v-for="(player, i) of props.players" :key="i" :id="player.username"> 
@@ -49,12 +49,12 @@
         </div>
         <div class="row row2">
             <div class="column column1">
-                <div class="map-tile" @click="$emit('tile-pick', 'tensor')" id="i9">
-                    <img src="../assets/icons/tensor.png" alt="">
-                    <span class="orange-line"></span>
-                </div>
                 <div class="map-tile" @click="$emit('tile-pick', 'finam')" id="i8">
                     <img src="../assets/icons/finam.png" alt="">
+                    <span class="orange-line"></span>
+                </div>
+                <div class="map-tile" @click="$emit('tile-pick', 'tensor')" id="i9">
+                    <img src="../assets/icons/tensor.png" alt="">
                     <span class="orange-line"></span>
                 </div>
                 <div class="map-tile" id="i7">
@@ -240,6 +240,14 @@ defineExpose({
     position: absolute;
     bottom: 25px;
     left: -50px;
+}
+.clickable{
+    cursor: pointer;
+    transition: 0.2s;
+}
+.clickable:hover{
+    transform: scale(1.1);
+    transition: 0.2s;
 }
 .red-line{
     background-color: var(--red);

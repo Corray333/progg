@@ -19,11 +19,12 @@ const (
 )
 
 type Room struct {
-	Name         string           `json:"name`
-	Password     [32]byte         `json:"-"`
-	ActivePlayer string           `json:"active_player"`
-	Started      bool             `json:"started"`
-	Players      []*player.Player `json:"players"`
+	Name             string           `json:"name`
+	Password         [32]byte         `json:"-"`
+	ActivePlayer     string           `json:"active_player"`
+	Started          bool             `json:"started"`
+	EndOfCurrentTurn time.Time        `json:"end_of_current_turn"`
+	Players          []*player.Player `json:"players"`
 }
 
 func NewRoom(roomName, playerName, password string) *Room {
@@ -81,14 +82,16 @@ func (r *Room) Start() {
 	}
 	slog.Info("Game started in room " + r.Name)
 	for i := 0; i < len(r.Players); i++ {
-		// code of turn
+		r.ActivePlayer = r.Players[i].Username
+		// TODO: turn it to function
 		type Turn struct {
 			Username  string    `json:"username"`
 			EndOfTurn time.Time `json:"end_of_turn"`
 		}
+		r.EndOfCurrentTurn = time.Now().Add(TurnTime * time.Second)
 		req := Turn{
 			Username:  r.Players[i].Username,
-			EndOfTurn: time.Now().Add(TurnTime * time.Second),
+			EndOfTurn: r.EndOfCurrentTurn,
 		}
 		res, err := json.Marshal(req)
 		if err != nil {
@@ -105,7 +108,7 @@ func (r *Room) Start() {
 			}
 		}()
 		time.Sleep(TurnTime * time.Second)
-
+		r.Players[i].AlreadyWalked = false
 		if i == len(r.Players)-1 {
 			i = -1
 		}
@@ -120,6 +123,7 @@ func (r *Room) Start() {
 // 05 - get all info
 
 func (r *Room) Handle(query string, username string) {
+	slog.Info("Handling query: " + query)
 	if len(query) < 2 {
 		return
 	}
@@ -135,14 +139,54 @@ func (r *Room) Handle(query string, username string) {
 			f = f && p.Ready
 		}
 		if f {
-			r.Start()
+			go r.Start()
 		}
 	case "02":
+		if !r.Started {
+			for _, p := range r.Players {
+				if p.Username != username {
+					continue
+				}
+				err := p.Conn.WriteMessage(1, []byte("02no"))
+				if err != nil {
+					slog.Error("writing message: " + err.Error())
+				}
+				return
+			}
+		}
+		type Turn struct {
+			Username  string    `json:"username"`
+			EndOfTurn time.Time `json:"end_of_turn"`
+		}
+		req := Turn{
+			Username:  r.ActivePlayer,
+			EndOfTurn: r.EndOfCurrentTurn,
+		}
+		res, err := json.Marshal(req)
+		if err != nil {
+			slog.Error(err.Error())
+			break
+		}
+		res = append([]byte("02"), res...)
+		for _, p := range r.Players {
+			if p.Username != username {
+				continue
+			}
+			err := p.Conn.WriteMessage(1, res)
+			if err != nil {
+				slog.Error("writing message: " + err.Error())
+			}
+			return
+		}
 	case "03":
 		for _, p := range r.Players {
 			if p.Username == username && p.Username == r.ActivePlayer {
 				steps := rand.Int()%6 + 1
 				p.Position = (p.Position+steps)%36 + 1
+				if p.AlreadyWalked {
+					return
+				}
+				p.AlreadyWalked = true
 				for _, p1 := range r.Players {
 					type Resp struct {
 						Username string `json:"username"`
@@ -160,7 +204,9 @@ func (r *Room) Handle(query string, username string) {
 			}
 		}
 	case "04":
+		r.NewBuy(username, query[2:])
 	case "05":
+		// TODO
 		player := string(query[2:])
 		for _, p := range r.Players {
 			if p.Username == player {

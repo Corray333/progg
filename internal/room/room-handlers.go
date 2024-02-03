@@ -25,3 +25,24 @@ func (r *Room) SendAllInfo(p *player.Player) {
 	p.Conn.WriteMessage(1, res)
 
 }
+
+func (r *Room) NewBuy(username, company string) {
+	for _, p := range r.Players {
+		if p.Username != username {
+			continue
+		}
+		if p.Money < Companies[company].Price {
+			return
+		}
+		p.Money -= Companies[company].Price
+		p.Companies = append(p.Companies, company)
+		msg, err := json.Marshal(p)
+		if err != nil {
+			return
+		}
+		for _, p1 := range r.Players {
+			p1.Conn.WriteMessage(1, append([]byte("00"), msg...))
+		}
+		break
+	}
+}

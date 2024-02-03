@@ -18,7 +18,7 @@
         <PlayMap @tile-pick="changeCard" @move="move" :players="players" :endOfTurn="endOfTurn" :playerProfile="playerProfile" ref="mapComponent"/>
         <div class="column">
             <div class="row">
-                <InfoCard :pick="pick" :players="players"/>
+                <InfoCard @buy="buy" :pick="pick" :players="players" :activePlayer="activePlayer" :playerProfile="playerProfile"/>
                 <PlayersList :players="players" :playerProfile="playerProfile"  @ready="ready" :turnTimer="turnTimer"/>
             </div>
             <HandCards/>
@@ -60,16 +60,6 @@ const timer = ()=>{
     turnTimer.value = Math.floor((endOfTurn.value-Date.now())/1000)
     clearInterval(timerInterval)
     timerInterval = setInterval(()=>{
-        if (turnTimer.value <= 0) {
-            for (let player of players.value){
-                if (player.status == 'active'){
-                    player.status = 'waiting'
-                    break
-                }
-            }
-            clearInterval(timerInterval)
-            return
-        }
         turnTimer.value--
     }, 1000)
 }
@@ -94,7 +84,7 @@ map.set('vk', {
         progPrice: 200,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/vk.png',
+        key: 'vk',
         number: 36
     }
 )
@@ -109,14 +99,14 @@ map.set('ozon', {
         progPrice: 200,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/ozon.png',
+        key: 'ozon',
         number: 34
     }
 )
 map.set('yandex', {
         name:'Yandex',
         description:'Yandex — российская транснациональная компания, владеющая одноимённой системой поиска в Сети, интернет-порталами и службами в нескольких странах. Штаб-квартира — в Москве.',
-        price:320,
+        price:300,
         color:'red',
         programs:['Yandex','Yandex музыка','Yandex облако'],
         progsCount: 0,
@@ -124,14 +114,14 @@ map.set('yandex', {
         progPrice: 200,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/yandex.png',
+        key: 'yandex',
         number: 30
     }
 )
 map.set('alpha', {
-        name:'Ozon',
+        name:'Alpha',
         description:'Ozon — российская интернет-компания, владеющая одноимённым интернет-магазином. Штаб-квартира компании расположена в Москве. Основана в 1998 году Дмитрием Бакшеевым и Александром Шульгином.',
-        price:300,
+        price:320,
         color:'red',
         programs:['Aplha банк','Alpha страхование','Alpha инвестиции'],
         progsCount: 0,
@@ -139,7 +129,7 @@ map.set('alpha', {
         progPrice: 200,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/yandex.png',
+        key: 'yandex',
         number: 32
     }
 )
@@ -154,7 +144,7 @@ map.set('magnit', {
         progPrice: 150,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/magnit.png',
+        key: 'magnit',
         number: 29
     }
 )
@@ -169,7 +159,7 @@ map.set('rostelekom', {
         progPrice: 150,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/rostelekom.png',
+        key: 'rostelekom',
         number: 25
     }
 )
@@ -184,7 +174,7 @@ map.set('netbynet', {
         progPrice: 150,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/netbynet.png',
+        key: 'netbynet',
         number: 27
     }
 )
@@ -199,7 +189,7 @@ map.set('tinkoff', {
         progPrice: 150,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/tinkoff.png',
+        key: 'tinkoff',
         number: 23
     }
 )
@@ -214,7 +204,7 @@ map.set('beeline', {
         progPrice: 150,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/beeline.png',
+        key: 'beeline',
         number: 22
     }
 )
@@ -229,7 +219,7 @@ map.set('1c', {
         progPrice: 150,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/1c.png',
+        key: '1c',
         number: 20
     }
 )
@@ -244,7 +234,7 @@ map.set('rostech', {
         progPrice: 100,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/rostech.png',
+        key: 'rostech',
         number: 18
     }
 )
@@ -259,7 +249,7 @@ map.set('astra', {
         progPrice: 100,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/astra.png',
+        key: 'astra',
         number: 16
     }
 )
@@ -274,7 +264,7 @@ map.set('sber', {
         progPrice: 100,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/sber.png',
+        key: 'sber',
         number: 14
     }
 )
@@ -289,7 +279,7 @@ map.set('kaspersky', {
         progPrice: 100,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/kaspersky.png',
+        key: 'kaspersky',
         number: 13
     }
 )
@@ -304,7 +294,7 @@ map.set('megafon', {
         progPrice: 100,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/megafon.png',
+        key: 'megafon',
         number: 11
     }
 )
@@ -319,8 +309,8 @@ map.set('finam', {
         progPrice: 50,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/finam.png',
-        number: 8
+        key: 'finam',
+        number: 9
     }
 )
 map.set('tensor', {
@@ -334,8 +324,8 @@ map.set('tensor', {
         progPrice: 50,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/tensor.png',
-        number: 9
+        key: 'tensor',
+        number: 8
     }
 )
 map.set('europlan', {
@@ -349,7 +339,7 @@ map.set('europlan', {
         progPrice: 50,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/europlan.png',
+        key: 'europlan',
         number: 6
     }
 )
@@ -364,7 +354,7 @@ map.set('yota', {
         progPrice: 50,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/yota.png',
+        key: 'yota',
         number: 4
     }
 )
@@ -379,10 +369,70 @@ map.set('skyeng', {
         progPrice: 50,
         owner: 'отсутствует',
         playersHere: [],
-        img: 'icons/skyeng.png',
+        key: 'skyeng',
         number: 2
     }
 )
+map.set('hh', {
+        name:'HeadHunter',
+        description:'',
+        price:200,
+        programs:['Ozon','Ozon банк','OZON Travel'],
+        progsCount: 0,
+        rentLevels: [20, 50, 100, 200, 300],
+        owner: 'отсутствует',
+        playersHere: [],
+        key: 'hh',
+        number: 5
+    }
+)
+map.set('geekbrains', {
+        name:'Geekbrains',
+        description:'',
+        price:200,
+        programs:['Ozon','Ozon банк','OZON Travel'],
+        progsCount: 0,
+        rentLevels: [20, 50, 100, 200, 300],
+        owner: 'отсутствует',
+        playersHere: [],
+        key: 'geekbrains',
+        number: 17
+    }
+)
+map.set('wot', {
+        name:'World of Tanks',
+        description:'',
+        price:200,
+        programs:['Ozon','Ozon банк','OZON Travel'],
+        progsCount: 0,
+        rentLevels: [20, 50, 100, 200, 300],
+        owner: 'отсутствует',
+        playersHere: [],
+        key: 'wot',
+        number: 26
+    }
+)
+map.set('intellij', {
+        name:'IntelliJ IDEA',
+        description:'',
+        price:200,
+        programs:['Ozon','Ozon банк','OZON Travel'],
+        progsCount: 0,
+        rentLevels: [20, 50, 100, 200, 300],
+        owner: 'отсутствует',
+        playersHere: [],
+        key: 'intellij',
+        number: 35
+    }
+)
+}
+
+const buy = (company)=>{
+    if (map.get(company).price > playerProfile.money){
+        alert('У вас недостаточно денег')
+        return
+    }
+    socket.send('04'+company)
 }
 
 const pick = ref()
@@ -411,6 +461,7 @@ const joinRoom = async ()=>{
             console.log("Sending to server");
             socket.send(username.value+'|'+route);
             socket.send('05'+username.value)
+            socket.send('02')
             showModal.value = false
         };
 
@@ -444,7 +495,7 @@ router.beforeEach(()=>{
     }
 })
 
-// 00 - exit
+// 00 - update player
 // 01 - ready | game started
 // 02 - turn started
 // 03 - player move
@@ -457,12 +508,16 @@ const handleFunc = (data) =>{
     let req
     switch (type) {
         case '00':
-            console.log('exit')
+            req = JSON.parse(data.substring(2))
+            loadPlayer(req)
             break;
         case '01':
             console.log('start the game')
             break;
         case '02':
+            if (data.substring(2)=='no'){
+                return
+            }
             req = JSON.parse(data.substring(2))
             startTheTurn(req)
             break;
@@ -471,7 +526,6 @@ const handleFunc = (data) =>{
             movePlayer(req)
             break;
         case '04':
-            console.log('player bought')
             break;
         case '05':
             req = JSON.parse(data.substring(2))
@@ -498,6 +552,11 @@ const loadRoom = (req)=>{
 
 const startTheTurn = (req)=>{
     let ps = JSON.parse(JSON.stringify(players.value))
+    if (activePlayer.value != undefined){
+        activePlayer.value.status = 'waiting'
+        clearInterval(timerInterval)
+    }
+            
     for (let i = 0; i<ps.length; i++){
         if (ps[i].username== req.username){
             players.value[i].status = 'active'
@@ -509,10 +568,25 @@ const startTheTurn = (req)=>{
 }
 
 const move = ()=>{
-    socket.send('03')
+    console.log('move')
+    socket.send('03')   
 }
 const movePlayer = (req)=>{
     activePlayer.value.position = req.position
+}
+
+const loadPlayer = (req)=>{
+    for (let player of players.value){
+        if (player.username == req.username){
+            player.money = req.money
+            player.companies = req.companies
+            player.position = req.position
+            for (let company of player.companies){
+                map.get(company.substring(0,company.length-1)).owner = player.name
+                map.get(company.substring(0,company.length-1)).progsCount = Number(company[company.length-1])
+            }
+        }
+    }
 }
 
 </script>

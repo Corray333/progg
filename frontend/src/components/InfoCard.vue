@@ -1,7 +1,7 @@
 <template>
     <div class="card" ref="card" v-if="props.pick!=undefined" @click="console.log('test')">
         <span class="card-header">
-            <img :src="`/src/assets/${props.pick.img}`" alt="">
+            <img :src="`/src/assets/icons/${props.pick.key}.png`" alt="">
             <h3>{{ props.pick.name }}</h3>
         </span>
         <div class="line" v-if="props.pick.color != undefined" :class="props.pick.color"></div>
@@ -17,13 +17,14 @@
                 <img  class="player" v-if="player.position == pick.number" :src="`/src/assets/avatars/${player.avatar}.png`" alt="">
             </div>
         </div>
+        <button @click="$emit('buy', props.pick.key)" v-if="props.activePlayer != undefined && props.playerProfile != undefined && props.activePlayer.username == props.playerProfile.username && props.playerProfile.position == props.pick.number">Купить</button>
     </div>
 </template>
 
 <script setup>
 import { defineProps, ref } from 'vue'
 import {useEventListener} from '@vueuse/core'
-const props = defineProps(['pick', 'players'])
+const props = defineProps(['pick', 'players', 'activePlayer', 'playerProfile'])
 
 const card = ref(null)
 

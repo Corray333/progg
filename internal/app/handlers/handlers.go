@@ -82,8 +82,6 @@ func CreateRoom(rooms map[string]*room.Room) http.HandlerFunc {
 			return
 		}
 		room := room.NewRoom(req.RoomName, req.PlayerName, req.Password)
-		room.Players[0].Companies = []string{"yandex1"}
-		room.Players[0].Avatar = 0
 		rooms[req.RoomName] = room
 		slog.Info(fmt.Sprintf("Room created: %v", room))
 		w.WriteHeader(http.StatusCreated)
@@ -150,6 +148,7 @@ func Play(rooms map[string]*room.Room) http.HandlerFunc {
 			}
 		}
 		for {
+			slog.Info("waiting for message")
 			_, msg, err = c.ReadMessage()
 			if err != nil {
 				slog.Error("reading error:" + err.Error())
