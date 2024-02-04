@@ -7,29 +7,37 @@ type Quiz struct {
 }
 
 var Quizes = []Quiz{
-	Quiz{
+	{
 		Question: "Какая git команда отправляет изменения в удаленный репозиторий?",
 		Answer:   "git push",
 		Variants: []string{"git push", "git pull", "git commit", "git add"},
 	},
-	Quiz{
+	{
 		Question: "Какая git команда создает новую ветку?",
 		Answer:   "git branch",
 		Variants: []string{"git branch", "git checkout", "git merge", "git add"},
 	},
-	Quiz{
+	{
 		Question: "Какая git команда переключает ветки?",
 		Answer:   "git checkout",
 		Variants: []string{"git checkout", "git branch", "git merge", "git add"},
 	},
-	Quiz{
+	{
 		Question: "... - это принцип, позволяющий объектам разных типов обрабатываться как объекты одного типа.",
 		Answer:   "Полиморфизм",
 		Variants: []string{"Инкапсуляция", "Полиморфизм", "Наследование", "Абстракция"},
 	},
-	Quiz{
+	{
 		Question: "... - это простейшая форма искусственной нейронной сети, модель бинарного классификатора.",
 		Answer:   "Персептрон",
 		Variants: []string{"Сеть Хопфилда", "Сеть Кохонена", "Персептрон", "Сеть Болцмана"},
+	},
+}
+
+var GameQuizes = []Quiz{
+	{
+		Question: "Первой игрой в жанре first person shooter была ...",
+		Answer:   "Wolfenstein 3D",
+		Variants: []string{"Doom", "Wolfenstein 3D", "Quake", "Half-Life"},
 	},
 }

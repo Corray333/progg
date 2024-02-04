@@ -17,7 +17,7 @@
                 <img  class="player" v-if="player.position == pick.number" :src="`/src/assets/avatars/${player.avatar}.png`" alt="">
             </div>
         </div>
-        <button @click="$emit('buy', props.pick.key)" v-if="props.activePlayer != undefined && props.playerProfile != undefined && props.activePlayer.username == props.playerProfile.username && props.playerProfile.position == props.pick.number">Купить</button>
+        <button @click="$emit('buy', props.pick.key)" v-if="props.pick.owner == 'отсутствует' && props.activePlayer != undefined && props.playerProfile != undefined && props.activePlayer.username == props.playerProfile.username && props.playerProfile.position == props.pick.number">Купить</button>
     </div>
 </template>
 

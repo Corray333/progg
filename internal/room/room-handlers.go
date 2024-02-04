@@ -26,19 +26,48 @@ func (r *Room) SendAllInfo(p *player.Player) {
 
 }
 
-func (r *Room) NewBuy(username, company string) {
+func (r *Room) NewBuy(username, request string) {
+	type Req struct {
+		Company string `json:"company"`
+		Answer  string `json:"answer"`
+		QuizID  int    `json:"quiz_id"`
+		IsGame  bool   `json:"is_game"`
+	}
+	var req Req
+	err := json.Unmarshal([]byte(request), &req)
+	if err != nil {
+		return
+	}
+
 	for _, p := range r.Players {
 		if p.Username != username {
 			continue
 		}
-		if p.Money < Companies[company].Price {
+		if req.IsGame && req.Answer != GameQuizes[req.QuizID].Answer || req.Answer != Quizes[req.QuizID].Answer {
+			for _, p1 := range r.Players {
+				p1.Conn.WriteMessage(1, []byte("04no"))
+			}
 			return
 		}
-		p.Money -= Companies[company].Price
-		p.Companies = append(p.Companies, company)
+		if p.Money < Companies[req.Company].Price {
+			p.Conn.WriteMessage(1, []byte("04money"))
+			return
+		}
+		p.Money -= Companies[req.Company].Price
+		for _, p1 := range r.Players {
+			for _, comp := range p1.Companies {
+				if comp[:len(comp)-1] == req.Company {
+					return
+				}
+			}
+		}
+		p.Companies = append(p.Companies, req.Company+"1")
 		msg, err := json.Marshal(p)
 		if err != nil {
 			return
+		}
+		for _, p1 := range r.Players {
+			p1.Conn.WriteMessage(1, append([]byte("04"), request...))
 		}
 		for _, p1 := range r.Players {
 			p1.Conn.WriteMessage(1, append([]byte("00"), msg...))

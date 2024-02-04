@@ -1,6 +1,7 @@
 package room
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
@@ -19,12 +20,13 @@ const (
 )
 
 type Room struct {
-	Name             string           `json:"name`
+	Name             string           `json:"name"`
 	Password         [32]byte         `json:"-"`
 	ActivePlayer     string           `json:"active_player"`
 	Started          bool             `json:"started"`
 	EndOfCurrentTurn time.Time        `json:"end_of_current_turn"`
 	Players          []*player.Player `json:"players"`
+	Cancel           context.CancelFunc
 }
 
 func NewRoom(roomName, playerName, password string) *Room {
@@ -98,19 +100,38 @@ func (r *Room) Start() {
 			slog.Error(err.Error())
 			continue
 		}
-		go func() {
-			res = append([]byte("02"), res...)
-			for _, p := range r.Players {
-				err := p.Conn.WriteMessage(1, res)
-				if err != nil {
-					slog.Error("writing message: " + err.Error())
-				}
-			}
-		}()
-		time.Sleep(TurnTime * time.Second)
+		r.Turn(res)
 		r.Players[i].AlreadyWalked = false
 		if i == len(r.Players)-1 {
 			i = -1
+		}
+	}
+}
+
+func (r *Room) Turn(res []byte) {
+	ctx, cancel := context.WithCancel(context.Background())
+	r.Cancel = cancel
+	go func() {
+		res = append([]byte("02"), res...)
+		for _, p := range r.Players {
+			err := p.Conn.WriteMessage(1, res)
+			if err != nil {
+				slog.Error("writing message: " + err.Error())
+			}
+		}
+	}()
+	until := time.Now().Add(TurnTime * time.Second)
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("Goroutine stopped.")
+			return
+		default:
+			if time.Now().After(until) {
+				cancel()
+				return
+			}
+			time.Sleep(100 * time.Millisecond)
 		}
 	}
 }
@@ -121,6 +142,8 @@ func (r *Room) Start() {
 // 03 - player moved
 // 04 - player bought
 // 05 - get all info
+// 06 - get quiz
+// 07 - end of turn
 
 func (r *Room) Handle(query string, username string) {
 	slog.Info("Handling query: " + query)
@@ -213,6 +236,33 @@ func (r *Room) Handle(query string, username string) {
 				r.SendAllInfo(p)
 			}
 		}
+	case "06":
+		var quiz Quiz
+		var qid int
+		if query[2:] == "true" {
+			qid = rand.Int() % len(GameQuizes)
+			quiz = GameQuizes[qid]
+		} else {
+			qid = rand.Int() % len(Quizes)
+			quiz = Quizes[qid]
+		}
+		type Resp struct {
+			Quiz
+			QuizID int `json:"quiz_id"`
+		}
+		resp, err := json.Marshal(Resp{quiz, qid})
+		if err != nil {
+			slog.Error(err.Error())
+			return
+		}
+		for _, p := range r.Players {
+			p.Conn.WriteMessage(1, append([]byte("06"), resp...))
+		}
+	case "07":
+		if username != r.ActivePlayer {
+			return
+		}
+		r.Cancel()
 	default:
 		slog.Info("Unknown query: " + query)
 	}

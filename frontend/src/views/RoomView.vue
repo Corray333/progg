@@ -1,5 +1,11 @@
 <template>
     <div class="room">
+        <transition>
+            <div class="quiz-wrapper" v-if="quiz!=null">
+                <QuizModal :quiz="quiz" :active-player="activePlayer" :player-profile="playerProfile" @answer="answer"/>
+            </div>
+        </transition>
+
         <div class="join-room-modal-wrapper" v-show="showModal">
             <div class="join-room-modal">
                 <h2>Join room</h2>
@@ -19,7 +25,7 @@
         <div class="column">
             <div class="row">
                 <InfoCard @buy="buy" :pick="pick" :players="players" :activePlayer="activePlayer" :playerProfile="playerProfile"/>
-                <PlayersList :players="players" :playerProfile="playerProfile"  @ready="ready" :turnTimer="turnTimer"/>
+                <PlayersList :active-player="activePlayer" @stopTheTurn="stopTheTurn" :players="players" :playerProfile="playerProfile"  @ready="ready" :turnTimer="turnTimer"/>
             </div>
             <HandCards/>
         </div>
@@ -36,6 +42,7 @@ import PlayMap from '../components/PlayMap.vue'
 import InfoCard from '../components/InfoCard.vue'
 import PlayersList from '../components/PlayersList.vue'
 import HandCards from '../components/HandCards.vue'
+import QuizModal from '../components/QuizModal.vue'
 
 const route = useRoute().params.room
 const router = useRouter()
@@ -427,17 +434,30 @@ map.set('intellij', {
 )
 }
 
+
+
+const pick = ref()
+const changeCard = (query)=>{
+    pick.value = map.get(query)
+}
+
+const quiz = ref(null)
+
 const buy = (company)=>{
     if (map.get(company).price > playerProfile.money){
         alert('У вас недостаточно денег')
         return
     }
-    socket.send('04'+company)
+    socket.send('06'+(map.get(company).progPrice==undefined?'true':'false'))
 }
-
-const pick = ref()
-const changeCard = (query)=>{
-    pick.value = map.get(query)
+const answer = (variant)=>{
+    let req = {
+        company: pick.value.key,
+        answer: variant,
+        quiz_id: quiz.value.quiz_id,
+        is_game: pick.value.progPrice==undefined
+    }
+    socket.send('04'+JSON.stringify(req))
 }
 
 const players = ref()
@@ -446,6 +466,10 @@ const mapComponent = ref(null)
 watch(players, ()=>{
     mapComponent.value.placePlayers()
 }, {deep: true})
+
+const stopTheTurn = ()=>{
+    socket.send('07')
+}
 
 const joinRoom = async ()=>{
     try { 
@@ -474,9 +498,9 @@ const joinRoom = async ()=>{
             if (event.wasClean) {
                 console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
             } else {
+                alert('Другой пользователь вошел под тем же именем')
                 console.log('[close] Connection died');
             }
-            alert('Другой пользователь вошел под тем же именем')
             router.push(`/home`)
         }
 
@@ -500,6 +524,8 @@ router.beforeEach(()=>{
 // 02 - turn started
 // 03 - player move
 // 04 - player bought
+// 05 - get all info
+// 06 - get quiz
 
 
 const handleFunc = (data) =>{
@@ -526,10 +552,16 @@ const handleFunc = (data) =>{
             movePlayer(req)
             break;
         case '04':
+            // TODO: make animation
+            quiz.value = null
             break;
         case '05':
             req = JSON.parse(data.substring(2))
             loadRoom(req)
+            break
+        case '06':
+            req = JSON.parse(data.substring(2))
+            quiz.value = req
             break
         default:
             break;
@@ -544,7 +576,7 @@ const loadRoom = (req)=>{
         }
         player.status = 'waiting'
         for (let company of player.companies){
-            map.get(company.substring(0,company.length-1)).owner = player.name
+            map.get(company.substring(0,company.length-1)).owner = player.username
             map.get(company.substring(0,company.length-1)).progsCount = Number(company[company.length-1])
         }
     }
@@ -582,7 +614,7 @@ const loadPlayer = (req)=>{
             player.companies = req.companies
             player.position = req.position
             for (let company of player.companies){
-                map.get(company.substring(0,company.length-1)).owner = player.name
+                map.get(company.substring(0,company.length-1)).owner = player.username
                 map.get(company.substring(0,company.length-1)).progsCount = Number(company[company.length-1])
             }
         }
@@ -592,6 +624,29 @@ const loadPlayer = (req)=>{
 </script>
 
 <style scoped>
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+
+.quiz-wrapper{
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100vh;
+    backdrop-filter: blur(10px);
+    z-index: 100;
+    top: 0;
+    left: 0;
+}
 
 .join-room-modal-wrapper{
     top: 0;

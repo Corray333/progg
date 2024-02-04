@@ -8,13 +8,16 @@
                 <p>{{ player.money }}k</p>
             </div>
             <p v-if="player.status == 'active'" class="timer">{{ turnTimer }}c</p>
+            <button @click="$emit('stopTheTurn')" v-if="props.playerProfile != undefined && props.activePlayer != undefined && props.playerProfile.username == props.activePlayer.username && props.playerProfile.username == player.username">
+                <img src="/src/assets/icons/next.png" alt="">
+            </button>
         </div>
         <button @click="$emit('ready')" v-if="playerProfile != undefined && playerProfile.ready==false">Готов</button>
     </div>
 </template>
 
 <script setup>
-const props = defineProps(['players', 'turnTimer', 'playerProfile'])
+const props = defineProps(['players', 'turnTimer', 'playerProfile', 'activePlayer'])
 
 
 
@@ -58,6 +61,10 @@ const props = defineProps(['players', 'turnTimer', 'playerProfile'])
 
 .timer{
     justify-self: flex-end;
+}
+
+.player>button>img{
+    width: 20px;
 }
 
 </style>
