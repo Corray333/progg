@@ -49,11 +49,11 @@
         </div>
         <div class="row row2">
             <div class="column column1">
-                <div class="map-tile" @click="$emit('tile-pick', 'finam')" id="i8">
+                <div class="map-tile" @click="$emit('tile-pick', 'finam')" id="i9">
                     <img src="../assets/icons/finam.png" alt="">
                     <span class="orange-line"></span>
                 </div>
-                <div class="map-tile" @click="$emit('tile-pick', 'tensor')" id="i9">
+                <div class="map-tile" @click="$emit('tile-pick', 'tensor')" id="i8">
                     <img src="../assets/icons/tensor.png" alt="">
                     <span class="orange-line"></span>
                 </div>

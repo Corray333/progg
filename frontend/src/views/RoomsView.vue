@@ -2,20 +2,20 @@
     <div class="rooms">
         <div class="create-room-modal-wrapper" v-show="showModal">
             <div class="create-room-modal">
-                <h2>Create room</h2>
+                <h2>Создать комнату</h2>
                 <span>
-                    <p>Username: </p>
+                    <p>Имя пользователя: </p>
                     <input type="text" v-model="username" autocomplite="off">
                 </span>
                 <span>
-                    <p>Name: </p>
+                    <p>Имя комнаты: </p>
                     <input type="text" v-model="roomName" autocomplite="off">
                 </span>
                 <span>
-                    <p>Password: </p>
+                    <p>Пароль: </p>
                     <input type="password" v-model="password" autocomplite="off">
                 </span>
-                <button @click="createRoom()">Create room</button>
+                <button @click="createRoom()">Создать</button>
                 <button id="close-modal" @click="showModal = false"><img src="../assets/icons/plus.png" alt=""></button>
             </div>
         </div>

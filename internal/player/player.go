@@ -11,6 +11,7 @@ type Player struct {
 	Companies     []string        `json:"companies"` // companyName + num of programs
 	Position      int             `json:"position"`
 	Hand          []int           `json:"hand"`
+	InPrisonFor   int             `json:"in_prison_for"`
 	Conn          *websocket.Conn `json:"-"`
 }
 

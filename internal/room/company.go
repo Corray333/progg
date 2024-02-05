@@ -1,5 +1,7 @@
 package room
 
+import "github.com/Corray333/progg/internal/player"
+
 type Company struct {
 	// Name        string
 	// Description string
@@ -13,6 +15,80 @@ type Company struct {
 	// PlayersHere []string
 	Key    string
 	Number int
+}
+
+type ChanceCard struct {
+	Text          string
+	IsImmediately bool
+	Func          func(*player.Player)
+}
+
+var Chances = []int{3, 7, 12, 15, 21, 24, 31, 33}
+var ChanceCards = []ChanceCard{
+	// "Отправляйтесь в тюрьму.",
+	// "Получите 200к.",
+	// "Выплатите 200к.",
+	// "Отправляйтесь на старт.",
+	// "Вернитесь на три поля назад.",
+	// "Отправляйтесь на три поля вперед.",
+	{
+		Text:          "Отправляйтесь в тюрьму.",
+		IsImmediately: true,
+		Func: func(p *player.Player) {
+			p.Position = 10
+			p.InPrisonFor = 2
+		},
+	},
+	{
+		Text: "Получите 200к.",
+		Func: func(p *player.Player) {
+			p.Money += 200
+			return
+		},
+	},
+	{
+		Text: "Выплатите 200к.",
+		Func: func(p *player.Player) {
+			p.Money -= 200
+			return
+		},
+	},
+	{
+		Text: "Отправляйтесь на старт.",
+		Func: func(p *player.Player) {
+			p.Position = 1
+			return
+		},
+	},
+	{
+		Text: "Вернитесь на три поля назад.",
+		Func: func(p *player.Player) {
+			p.Position = (p.Position-3)%36 + 1
+			return
+		},
+	},
+	{
+		Text: "Отправьтесь на три поля вперед.",
+		Func: func(p *player.Player) {
+			p.Position = (p.Position+3)%36 + 1
+			return
+		},
+	},
+	{
+		Text: "Освободитесь из тюрьмы.",
+		Func: func(p *player.Player) {
+			p.InPrisonFor = 0
+			return
+		},
+	},
+	// TODO
+	// {
+	// 	Text: "Освободитесь от вопроса.",
+	// 	Func: func(p *player.Player) {
+	// 		p.InPrisonFor = 0
+	// 		return
+	// 	},
+	// },
 }
 
 var Companies = map[string]Company{

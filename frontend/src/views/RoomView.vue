@@ -8,16 +8,16 @@
 
         <div class="join-room-modal-wrapper" v-show="showModal">
             <div class="join-room-modal">
-                <h2>Join room</h2>
+                <h2>Войти в комнату</h2>
                 <span>
-                    <p>Username: </p>
+                    <p>Имя пользователя: </p>
                     <input type="text" v-model="username" autocomplite="off">
                 </span>
                 <span>
-                    <p>Password: </p>
+                    <p>Пароль: </p>
                     <input type="password" v-model="password" autocomplite="off">
                 </span>
-                <button @click="joinRoom()">Join room</button>
+                <button @click="joinRoom()">Войти</button>
                 <button id="close-modal" @click="showModal = false; router.push('/rooms')"><img src="../assets/icons/plus.png" alt=""></button>
             </div>
         </div>
@@ -76,7 +76,7 @@ const ready = ()=>{
     playerProfile.ready = true
 }
 
-
+// TODO: fix yandex and sber
 // Map with info about map
 const map = new Map()
 {
@@ -136,7 +136,7 @@ map.set('alpha', {
         progPrice: 200,
         owner: 'отсутствует',
         playersHere: [],
-        key: 'yandex',
+        key: 'alpha',
         number: 32
     }
 )
@@ -526,6 +526,8 @@ router.beforeEach(()=>{
 // 04 - player bought
 // 05 - get all info
 // 06 - get quiz
+// 07 - end of turn
+// 08 - get chance
 
 
 const handleFunc = (data) =>{

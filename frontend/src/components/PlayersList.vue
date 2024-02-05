@@ -1,6 +1,6 @@
 <template>
     <div class="players">
-        <h2>Players</h2>
+        <h2>Игроки</h2>
         <div class="player" :class="player.status" v-for="(player, i) of props.players" :key="i">
             <img :src="`/src/assets/avatars/${player.avatar}.png`" alt="">
             <div class="player-info">

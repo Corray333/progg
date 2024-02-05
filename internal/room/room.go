@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"os"
 	"slices"
+	"sync"
 	"time"
 
 	"github.com/Corray333/progg/internal/player"
@@ -26,7 +27,9 @@ type Room struct {
 	Started          bool             `json:"started"`
 	EndOfCurrentTurn time.Time        `json:"end_of_current_turn"`
 	Players          []*player.Player `json:"players"`
-	Cancel           context.CancelFunc
+	StopTheTurn      context.CancelFunc
+	StopTheQuiz      context.CancelFunc
+	Mu               sync.Mutex
 }
 
 func NewRoom(roomName, playerName, password string) *Room {
@@ -69,6 +72,11 @@ func (r *Room) NewPlayer(playerName string) error {
 	return nil
 }
 
+type Turn struct {
+	Username  string    `json:"username"`
+	EndOfTurn time.Time `json:"end_of_turn"`
+}
+
 func (r *Room) Start() {
 	// TODO: exception is not enough players
 	r.Started = true
@@ -86,21 +94,14 @@ func (r *Room) Start() {
 	for i := 0; i < len(r.Players); i++ {
 		r.ActivePlayer = r.Players[i].Username
 		// TODO: turn it to function
-		type Turn struct {
-			Username  string    `json:"username"`
-			EndOfTurn time.Time `json:"end_of_turn"`
-		}
+
 		r.EndOfCurrentTurn = time.Now().Add(TurnTime * time.Second)
 		req := Turn{
 			Username:  r.Players[i].Username,
 			EndOfTurn: r.EndOfCurrentTurn,
 		}
-		res, err := json.Marshal(req)
-		if err != nil {
-			slog.Error(err.Error())
-			continue
-		}
-		r.Turn(res)
+
+		r.Turn(req)
 		r.Players[i].AlreadyWalked = false
 		if i == len(r.Players)-1 {
 			i = -1
@@ -108,9 +109,14 @@ func (r *Room) Start() {
 	}
 }
 
-func (r *Room) Turn(res []byte) {
+func (r *Room) Turn(req Turn) {
+	res, err := json.Marshal(req)
+	if err != nil {
+		slog.Error(err.Error())
+		// TODO: make event handler
+	}
 	ctx, cancel := context.WithCancel(context.Background())
-	r.Cancel = cancel
+	r.StopTheTurn = cancel
 	go func() {
 		res = append([]byte("02"), res...)
 		for _, p := range r.Players {
@@ -124,12 +130,18 @@ func (r *Room) Turn(res []byte) {
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Println("Goroutine stopped.")
+			for _, p := range r.Players {
+				if p.Username == req.Username {
+					if !p.AlreadyWalked {
+						r.Walk(req.Username)
+					}
+				}
+			}
 			return
 		default:
 			if time.Now().After(until) {
 				cancel()
-				return
+				r.StopTheQuiz()
 			}
 			time.Sleep(100 * time.Millisecond)
 		}
@@ -195,37 +207,16 @@ func (r *Room) Handle(query string, username string) {
 			if p.Username != username {
 				continue
 			}
+			r.Mu.Lock()
 			err := p.Conn.WriteMessage(1, res)
+			r.Mu.Unlock()
 			if err != nil {
 				slog.Error("writing message: " + err.Error())
 			}
 			return
 		}
 	case "03":
-		for _, p := range r.Players {
-			if p.Username == username && p.Username == r.ActivePlayer {
-				steps := rand.Int()%6 + 1
-				p.Position = (p.Position+steps)%36 + 1
-				if p.AlreadyWalked {
-					return
-				}
-				p.AlreadyWalked = true
-				for _, p1 := range r.Players {
-					type Resp struct {
-						Username string `json:"username"`
-						Position int    `json:"position"`
-						Steps    int    `json:"steps"`
-					}
-					resp, err := json.Marshal(Resp{r.ActivePlayer, p.Position, steps})
-					if err != nil {
-						slog.Error(err.Error())
-						return
-					}
-					p1.Conn.WriteMessage(1, append([]byte("03"), resp...))
-				}
-				return
-			}
-		}
+		r.Walk(username)
 	case "04":
 		r.NewBuy(username, query[2:])
 	case "05":
@@ -237,32 +228,12 @@ func (r *Room) Handle(query string, username string) {
 			}
 		}
 	case "06":
-		var quiz Quiz
-		var qid int
-		if query[2:] == "true" {
-			qid = rand.Int() % len(GameQuizes)
-			quiz = GameQuizes[qid]
-		} else {
-			qid = rand.Int() % len(Quizes)
-			quiz = Quizes[qid]
-		}
-		type Resp struct {
-			Quiz
-			QuizID int `json:"quiz_id"`
-		}
-		resp, err := json.Marshal(Resp{quiz, qid})
-		if err != nil {
-			slog.Error(err.Error())
-			return
-		}
-		for _, p := range r.Players {
-			p.Conn.WriteMessage(1, append([]byte("06"), resp...))
-		}
+		r.StartQuiz(query)
 	case "07":
 		if username != r.ActivePlayer {
 			return
 		}
-		r.Cancel()
+		r.StopTheTurn()
 	default:
 		slog.Info("Unknown query: " + query)
 	}
