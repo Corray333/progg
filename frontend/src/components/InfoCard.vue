@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import { defineProps, ref } from 'vue'
+import { ref } from 'vue'
 import {useEventListener} from '@vueuse/core'
 const props = defineProps(['pick', 'players', 'activePlayer', 'playerProfile'])
 

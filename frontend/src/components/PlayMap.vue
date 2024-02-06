@@ -81,7 +81,7 @@
                     <span class="light-blue-line"></span>
                 </div>
             </div>
-            <div class="chance-deck" @click="placePlayers()">
+            <div class="chance-deck">
                 <div class="chance-card"><p>Шанс</p></div>
                 <div class="chance-card"><p>Шанс</p></div>
             </div>

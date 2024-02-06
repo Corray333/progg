@@ -20,7 +20,7 @@
             </div>
         </div>
         
-        <h1>Rooms</h1>
+        <h1>Комнаты</h1>
         <form class="search-bar" @submit.prevent="find()">
             <input type="text" v-model="search">
             <button @click="find()"><img src="../assets/icons/search.png" alt=""></button>

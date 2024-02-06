@@ -1,3 +1,2 @@
 .env
-frontend/public/models
-frontend/public/draco3d
+cmd/main
