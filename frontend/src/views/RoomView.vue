@@ -24,7 +24,7 @@
         <PlayMap @tile-pick="changeCard" @move="move" :players="players" :endOfTurn="endOfTurn" :playerProfile="playerProfile" ref="mapComponent"/>
         <div class="column">
             <div class="row">
-                <InfoCard @buy="buy" :pick="pick" :players="players" :activePlayer="activePlayer" :playerProfile="playerProfile"/>
+                <InfoCard :key="pick != undefined ? pick.owner : 'card'" @buy="buy" :pick="pick" :players="players" :activePlayer="activePlayer" :playerProfile="playerProfile"/>
                 <PlayersList :active-player="activePlayer" @stopTheTurn="stopTheTurn" :players="players" :playerProfile="playerProfile"  @ready="ready" :turnTimer="turnTimer"/>
             </div>
             <HandCards/>

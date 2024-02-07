@@ -1,32 +1,35 @@
 <template>
-    <div class="card" ref="card" v-if="props.pick!=undefined" @click="console.log('test')">
+    <div class="card" ref="card" v-if="pick!=undefined" @click="console.log('test')" key="card">
         <span class="card-header">
-            <img :src="`/src/assets/icons/${props.pick.key}.png`" alt="">
-            <h3>{{ props.pick.name }}</h3>
+            <img :src="`/src/assets/icons/${pick.key}.png`" alt="">
+            <h3>{{ pickRef.name }}</h3>
         </span>
-        <div class="line" v-if="props.pick.color != undefined" :class="props.pick.color"></div>
-        <p>Владелец: {{ props.pick.owner }}</p>
-        <p>Цена: {{ props.pick.price }}</p>
-        <p>Рента: {{ props.pick.rentLevels[props.pick.progsCount] }}</p>
+        <div class="line" v-if="pick.color != undefined" :class="pick.color"></div>
+        <p>Владелец: {{ pickRef.owner }}</p>
+        <p>Цена: {{ pick.price }}</p>
+        <p>Рента: {{ pick.rentLevels[pick.progsCount] }}</p>
         <div class="row">
-            <img src="/src/assets/icons/prog.png" alt="" v-for="i in props.pick.progsCount" :key="i">
+            <img src="/src/assets/icons/prog.png" alt="" v-for="i in pick.progsCount" :key="i">
         </div>
         <h3>Игроки на поле</h3>
         <div class="players">
-            <div v-for="(player,i) of props.players"  :key="i" >
+            <div v-for="(player,i) of players"  :key="i" >
                 <img  class="player" v-if="player.position == pick.number" :src="`/src/assets/avatars/${player.avatar}.png`" alt="">
             </div>
         </div>
-        <button @click="$emit('buy', props.pick.key)" v-if="props.pick.owner == 'отсутствует' && props.activePlayer != undefined && props.playerProfile != undefined && props.activePlayer.username == props.playerProfile.username && props.playerProfile.position == props.pick.number">Купить</button>
+        <button @click="$emit('buy', pick.key)" v-if="pick.owner == 'отсутствует' && activePlayer != undefined && playerProfile != undefined && activePlayer.username == playerProfile.username && playerProfile.position == pick.number">Купить</button>
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, toRef } from 'vue'
 import {useEventListener} from '@vueuse/core'
 const props = defineProps(['pick', 'players', 'activePlayer', 'playerProfile'])
 
 const card = ref(null)
+
+const pickRef = toRef(props, 'pick')
+
 
 useEventListener(card, 'mousemove', (e)=>{
     var rect = card.value.getBoundingClientRect();

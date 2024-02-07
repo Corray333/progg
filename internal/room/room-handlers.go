@@ -95,6 +95,22 @@ func (r *Room) Walk(username string) {
 				return
 			}
 			p.AlreadyWalked = true
+			// if this map tile is bought by somebody other
+		playersLoop:
+			for _, p1 := range r.Players {
+				for _, comp := range p1.Companies {
+					if comp[:len(comp)-1] == Companies[CompanyKeys[p.Position-1]].Key {
+						rentLevel, err := strconv.Atoi(comp[len(comp)-1:])
+						if err != nil {
+							slog.Error(err.Error())
+						}
+						// TODO: make double if all companies of the color are bought
+						// TODO: make exception for game (not company)
+						p.Money -= Companies[comp[:len(comp)-1]].RentLevels[rentLevel-1]
+						break playersLoop
+					}
+				}
+			}
 			if slices.Contains(Chances, p.Position) {
 				card := rand.Int() % len(ChanceCards)
 				ChanceCards[card].Func(p)
