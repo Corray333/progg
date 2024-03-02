@@ -23,7 +23,6 @@ type ChanceCard struct {
 	Func          func(*player.Player)
 }
 
-var Chances = []int{3, 7, 12, 15, 21, 24, 31, 33}
 var ChanceCards = []ChanceCard{
 	// "Отправляйтесь в тюрьму.",
 	// "Получите 200к.",
@@ -91,28 +90,40 @@ var ChanceCards = []ChanceCard{
 	// },
 }
 
-var CompanyKeys = []string{
+var Tiles = []string{
+	"start",
 	"skyeng",
+	"chance",
 	"yota",
 	"hh",
 	"europlan",
+	"chance",
 	"tensor",
 	"finam",
+	"prison",
 	"megafon",
+	"chance",
 	"kaspersky",
 	"sber",
+	"chance",
 	"astra",
 	"geekbrains",
 	"rostech",
+	"sleep",
 	"1c",
+	"chance",
 	"beeline",
 	"tinkoff",
+	"chance",
 	"rostelekom",
 	"wot",
 	"netbynet",
+	"arest",
 	"magnit",
 	"yandex",
+	"chance",
 	"alpha",
+	"chance",
 	"ozon",
 	"intellij",
 	"vk",

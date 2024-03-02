@@ -434,6 +434,15 @@ map.set('intellij', {
 )
 }
 
+const Cards = [
+    "Отправляйтесь в тюрьму.",
+    "Получите 200к.",
+    "Выплатите 200к.",
+    "Отправляйтесь на старт.",
+    "Вернитесь на три поля назад.",
+    "Отправляйтесь на три поля вперед.",
+    "Освободитесь из тюрьмы."
+]
 
 
 const pick = ref()
@@ -459,6 +468,7 @@ const answer = (variant)=>{
     }
     socket.send('04'+JSON.stringify(req))
 }
+
 
 const players = ref()
 const mapComponent = ref(null)
@@ -498,7 +508,7 @@ const joinRoom = async ()=>{
             if (event.wasClean) {
                 console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
             } else {
-                alert('Другой пользователь вошел под тем же именем')
+                alert('Ошибка подключения')
                 console.log('[close] Connection died');
             }
             router.push(`/home`)
@@ -565,6 +575,9 @@ const handleFunc = (data) =>{
             req = JSON.parse(data.substring(2))
             quiz.value = req
             break
+        case '08':
+            // TODO: make animation
+            
         default:
             break;
     }
@@ -602,7 +615,6 @@ const startTheTurn = (req)=>{
 }
 
 const move = ()=>{
-    console.log('move')
     socket.send('03')   
 }
 const movePlayer = (req)=>{

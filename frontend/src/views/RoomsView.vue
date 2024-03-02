@@ -4,10 +4,6 @@
             <div class="create-room-modal">
                 <h2>Создать комнату</h2>
                 <span>
-                    <p>Имя пользователя: </p>
-                    <input type="text" v-model="username" autocomplite="off">
-                </span>
-                <span>
                     <p>Имя комнаты: </p>
                     <input type="text" v-model="roomName" autocomplite="off">
                 </span>
@@ -47,7 +43,6 @@ const search = ref('')
 const number = ref(0)
 const showModal = ref(false)
 
-const username = ref('')
 const password = ref('')
 const roomName = ref('')
 
@@ -64,7 +59,6 @@ const createRoom = async ()=>{
     try { 
         let req = {
             room_name:roomName.value,
-            player_name:username.value,
             password:password.value
         }
         await axios.post(`http://localhost:3000/rooms`, req) 

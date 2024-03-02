@@ -73,15 +73,14 @@ func GetRooms(rooms map[string]*room.Room) http.HandlerFunc {
 func CreateRoom(rooms map[string]*room.Room) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req struct {
-			RoomName   string `json:"room_name"`
-			PlayerName string `json:"player_name"`
-			Password   string `json:"password"`
+			RoomName string `json:"room_name"`
+			Password string `json:"password"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		room := room.NewRoom(req.RoomName, req.PlayerName, req.Password)
+		room := room.NewRoom(req.RoomName, req.Password)
 		rooms[req.RoomName] = room
 		slog.Info(fmt.Sprintf("Room created: %v", room))
 		w.WriteHeader(http.StatusCreated)

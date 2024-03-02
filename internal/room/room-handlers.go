@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"log/slog"
 	"math/rand"
-	"slices"
 	"strconv"
 
 	"github.com/Corray333/progg/internal/player"
@@ -28,7 +27,6 @@ func (r *Room) SendAllInfo(p *player.Player) {
 	}
 	res = append([]byte("05"), res...)
 	p.Conn.WriteMessage(1, res)
-
 }
 
 func (r *Room) NewBuy(username, request string) {
@@ -50,6 +48,7 @@ func (r *Room) NewBuy(username, request string) {
 		}
 		if req.IsGame && req.Answer != GameQuizes[req.QuizID].Answer || req.Answer != Quizes[req.QuizID].Answer {
 			for _, p1 := range r.Players {
+				r.AlreadyAnswered = true
 				p1.Conn.WriteMessage(1, []byte("04no"))
 			}
 			return
@@ -99,7 +98,7 @@ func (r *Room) Walk(username string) {
 		playersLoop:
 			for _, p1 := range r.Players {
 				for _, comp := range p1.Companies {
-					if comp[:len(comp)-1] == Companies[CompanyKeys[p.Position-1]].Key {
+					if comp[:len(comp)-1] == Companies[Tiles[p.Position-1]].Key {
 						rentLevel, err := strconv.Atoi(comp[len(comp)-1:])
 						if err != nil {
 							slog.Error(err.Error())
@@ -111,7 +110,7 @@ func (r *Room) Walk(username string) {
 					}
 				}
 			}
-			if slices.Contains(Chances, p.Position) {
+			if Tiles[p.Position-1] == "chance" {
 				card := rand.Int() % len(ChanceCards)
 				ChanceCards[card].Func(p)
 				r.Mu.Lock()
@@ -148,6 +147,9 @@ func (r *Room) Walk(username string) {
 }
 
 func (r *Room) StartQuiz(query string) {
+	if r.AlreadyAnswered == true {
+		return
+	}
 	var quiz Quiz
 	var qid int
 	if query[2:] == "true" {

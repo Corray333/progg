@@ -29,17 +29,18 @@ type Room struct {
 	Players          []*player.Player `json:"players"`
 	StopTheTurn      context.CancelFunc
 	StopTheQuiz      context.CancelFunc
+	AlreadyAnswered  bool
 	Mu               sync.Mutex
 }
 
-func NewRoom(roomName, playerName, password string) *Room {
+func NewRoom(roomName, password string) *Room {
 	return &Room{
 		Name:         roomName,
 		Password:     sha256.Sum256([]byte(password)),
-		ActivePlayer: playerName,
+		ActivePlayer: "",
 		Started:      false,
-		Players: []*player.Player{
-			player.NewPlayer(playerName),
+		Players:      []*player.Player{
+			// player.NewPlayer(playerName),
 		},
 	}
 }
@@ -69,6 +70,9 @@ func (r *Room) NewPlayer(playerName string) error {
 		return errors.New("game already started")
 	}
 	r.Players = append(r.Players, player)
+	for _, p := range r.Players {
+		r.SendAllInfo(p)
+	}
 	return nil
 }
 

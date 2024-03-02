@@ -17,13 +17,14 @@ const props = defineProps(['quiz', 'playerProfile', 'activePlayer'])
 <style scoped>
 
 .quiz-modal {
+    padding: 25px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     border: 3px solid white;
     border-radius: 15px;
-    padding: 25px;
+    padding: 2ns5px;
     background-color: var(--black);
     gap: 10px;
 }
