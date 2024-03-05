@@ -1,7 +1,7 @@
 <template>
     <div class="players">
         <h2>Игроки</h2>
-        <div class="player" :class="player.status" v-for="(player, i) of props.players" :key="i">
+        <div class="player" :class="`${player.status} ${player.username}`" v-for="(player, i) of props.players" :key="i">
             <img :src="`/src/assets/avatars/${player.avatar}.png`" alt="">
             <div class="player-info">
                 <p>{{ player.username }}</p>
@@ -11,6 +11,7 @@
             <button @click="$emit('stopTheTurn')" v-if="props.playerProfile != undefined && props.activePlayer != undefined && props.playerProfile.username == props.activePlayer.username && props.playerProfile.username == player.username">
                 <img src="/src/assets/icons/next.png" alt="">
             </button>
+            <p class="action"></p>
         </div>
         <button @click="$emit('ready')" v-if="playerProfile != undefined && playerProfile.ready==false">Готов</button>
     </div>

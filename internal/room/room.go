@@ -145,7 +145,9 @@ func (r *Room) Turn(req Turn) {
 		default:
 			if time.Now().After(until) {
 				cancel()
-				r.StopTheQuiz()
+				if r.StopTheQuiz != nil {
+					r.StopTheQuiz()
+				}
 			}
 			time.Sleep(100 * time.Millisecond)
 		}

@@ -34,7 +34,7 @@
 
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import {ref, watch} from 'vue'
+import {ref, watch, computed} from 'vue'
 import axios from 'axios'
 
 
@@ -477,6 +477,53 @@ watch(players, ()=>{
     mapComponent.value.placePlayers()
 }, {deep: true})
 
+const computedPlayers = computed(()=>{
+    let res = []
+    if (players.value == undefined) return res
+    players.value.forEach((player)=>{
+        let temp = {}
+        Object.assign(temp, player)
+        res.push(temp)
+    })
+    return res
+})
+function fromHTML(html, trim = true) {
+  // Process the HTML string.
+  html = trim ? html.trim() : html;
+  if (!html) return null;
+
+  // Then set up a new template element.
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  const result = template.content.children;
+
+  // Then return either an HTMLElement or HTMLCollection,
+  // based on whether the input HTML had one or more roots.
+  if (result.length === 1) return result[0];
+  return result;
+}
+watch (
+    computedPlayers,
+    (pNew, pOld)=>{
+        if (pOld == undefined || pNew == undefined) return
+        for (let i = 0; i<pNew.length; i++){
+            if (pOld[i] == undefined) continue
+            if (pOld[i].position != pNew[i].position){
+                let temp = document.querySelector(`.${pOld[i].username}`).lastChild
+                let diff = pNew[i].position - pOld[i].position
+                temp.textContent = `↑${diff}`
+            }
+            if (pOld[i].money != pNew[i].money){
+                let temp = document.querySelector(`.${pOld[i].username}`).lastChild
+                let diff = pNew[i].money - pOld[i].money
+                if (diff < 0) temp.textContent = `${diff}k`
+                else temp.textContent = `+${diff}k`
+            }
+        }
+    },
+    {deep: true}
+)
+
 const stopTheTurn = ()=>{
     socket.send('07')
 }
@@ -538,6 +585,7 @@ router.beforeEach(()=>{
 // 06 - get quiz
 // 07 - end of turn
 // 08 - get chance
+// 09 - message
 
 
 const handleFunc = (data) =>{
@@ -577,7 +625,21 @@ const handleFunc = (data) =>{
             break
         case '08':
             // TODO: make animation
-            
+            break;
+        case '09':
+            // req = JSON.parse(data.substring(2))
+            // switch (req.type) {
+            //     case 'chance':
+
+            //         break;
+            //     case 'buy':
+            //         break;
+            //     case 'move':
+            //         break;
+            //     default:
+            //         break;
+            // }
+            break;            
         default:
             break;
     }
